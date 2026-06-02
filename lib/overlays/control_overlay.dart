@@ -19,6 +19,8 @@ class ControlOverlay extends StatelessWidget {
           padding: const EdgeInsets.all(18),
           child: Column(
             children: [
+              if (game.isBuyingPhase)
+                _BuyingBanner(game: game),
               const Spacer(),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -47,23 +49,26 @@ class ControlOverlay extends StatelessWidget {
                           height: 92,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.redAccent.withOpacity(0.88),
+                            color: game.isBuyingPhase
+                                ? Colors.grey.withOpacity(0.55)
+                                : Colors.redAccent.withOpacity(0.88),
                             boxShadow: [
-                              BoxShadow(
-                                color: Colors.redAccent.withOpacity(0.4),
-                                blurRadius: 24,
-                                spreadRadius: 4,
-                              ),
+                              if (!game.isBuyingPhase)
+                                BoxShadow(
+                                  color: Colors.redAccent.withOpacity(0.4),
+                                  blurRadius: 24,
+                                  spreadRadius: 4,
+                                ),
                             ],
                             border: Border.all(
                               color: Colors.white.withOpacity(0.35),
                               width: 2,
                             ),
                           ),
-                          child: const Center(
+                          child: Center(
                             child: Text(
-                              'FIRE',
-                              style: TextStyle(
+                              game.isBuyingPhase ? 'BUY' : 'FIRE',
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w900,
                                 fontSize: 18,
@@ -80,6 +85,80 @@ class ControlOverlay extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _BuyingBanner extends StatefulWidget {
+  final OrbitGuardGame game;
+
+  const _BuyingBanner({
+    required this.game,
+  });
+
+  @override
+  State<_BuyingBanner> createState() => _BuyingBannerState();
+}
+
+class _BuyingBannerState extends State<_BuyingBanner> {
+  @override
+  void initState() {
+    super.initState();
+    _refresh();
+  }
+
+  Future<void> _refresh() async {
+    while (mounted) {
+      await Future.delayed(const Duration(milliseconds: 120));
+      if (mounted) setState(() {});
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 82),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.cyanAccent.withOpacity(0.16),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.cyanAccent.withOpacity(0.5),
+        ),
+      ),
+      child: Column(
+        children: [
+          Text(
+            widget.game.isFirstBuyingPhase
+                ? 'Prepare Your Rockets'
+                : 'Reward Claimed! Buy More Rockets',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Buying time left: ${widget.game.buyingTimeLeft.ceil()}s',
+            style: const TextStyle(
+              color: Colors.cyanAccent,
+              fontWeight: FontWeight.w800,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Tap rocket cards below to buy. Select rocket type before firing.',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 12,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
@@ -136,29 +215,54 @@ class _RocketSelector extends StatefulWidget {
 
 class _RocketSelectorState extends State<_RocketSelector> {
   @override
+  void initState() {
+    super.initState();
+    _refresh();
+  }
+
+  Future<void> _refresh() async {
+    while (mounted) {
+      await Future.delayed(const Duration(milliseconds: 150));
+      if (mounted) setState(() {});
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Row(
       children: List.generate(GameData.rockets.length, (index) {
         final rocket = GameData.rockets[index];
         final selected = widget.game.selectedRocketIndex == index;
+        final owned = widget.game.rocketInventory[index];
+        final canBuy = widget.game.gold >= rocket.cost;
 
         return GestureDetector(
           onTap: () {
+            setState(() {
+              if (widget.game.isBuyingPhase) {
+                widget.game.buyRocket(index);
+              } else {
+                widget.game.selectRocket(index);
+              }
+            });
+          },
+          onLongPress: () {
             setState(() {
               widget.game.selectRocket(index);
             });
           },
           child: Container(
+            width: 68,
             margin: const EdgeInsets.only(left: 7),
             padding: const EdgeInsets.symmetric(
-              horizontal: 10,
+              horizontal: 8,
               vertical: 8,
             ),
             decoration: BoxDecoration(
               color: selected
                   ? Colors.cyanAccent.withOpacity(0.28)
                   : Colors.black.withOpacity(0.35),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(14),
               border: Border.all(
                 color: selected
                     ? Colors.cyanAccent
@@ -171,15 +275,34 @@ class _RocketSelectorState extends State<_RocketSelector> {
                   'R${index + 1}',
                   style: const TextStyle(
                     color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 13,
                   ),
                 ),
+                const SizedBox(height: 2),
+                Text(
+                  '${rocket.damage.toInt()} DMG',
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 9,
+                  ),
+                ),
+                const SizedBox(height: 2),
                 Text(
                   '${rocket.cost}G',
-                  style: const TextStyle(
-                    color: Colors.amberAccent,
+                  style: TextStyle(
+                    color: canBuy ? Colors.amberAccent : Colors.redAccent,
+                    fontWeight: FontWeight.w700,
                     fontSize: 11,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'x$owned',
+                  style: const TextStyle(
+                    color: Colors.lightGreenAccent,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 13,
                   ),
                 ),
               ],
