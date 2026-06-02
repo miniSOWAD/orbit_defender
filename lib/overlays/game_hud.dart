@@ -14,9 +14,9 @@ class GameHud extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: ValueListenableBuilder<int>(
-        valueListenable: _HudTicker(game),
-        builder: (context, _, __) {
+      child: _HudAutoRefresh(
+        game: game,
+        childBuilder: () {
           return Padding(
             padding: const EdgeInsets.all(14),
             child: Column(
@@ -75,10 +75,89 @@ class GameHud extends StatelessWidget {
                   label: 'Ship HP',
                   value: game.shipHp / GameConfig.shipMaxHp,
                 ),
+                const SizedBox(height: 8),
+                _ModeBar(game: game),
               ],
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _HudAutoRefresh extends StatefulWidget {
+  final OrbitGuardGame game;
+  final Widget Function() childBuilder;
+
+  const _HudAutoRefresh({
+    required this.game,
+    required this.childBuilder,
+  });
+
+  @override
+  State<_HudAutoRefresh> createState() => _HudAutoRefreshState();
+}
+
+class _HudAutoRefreshState extends State<_HudAutoRefresh> {
+  @override
+  void initState() {
+    super.initState();
+    _refresh();
+  }
+
+  Future<void> _refresh() async {
+    while (mounted) {
+      await Future.delayed(const Duration(milliseconds: 150));
+      if (mounted) setState(() {});
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.childBuilder();
+  }
+}
+
+class _ModeBar extends StatelessWidget {
+  final OrbitGuardGame game;
+
+  const _ModeBar({
+    required this.game,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isBuying = game.isBuyingPhase;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 8,
+      ),
+      decoration: BoxDecoration(
+        color: isBuying
+            ? Colors.cyanAccent.withOpacity(0.16)
+            : Colors.white.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isBuying
+              ? Colors.cyanAccent.withOpacity(0.45)
+              : Colors.white.withOpacity(0.16),
+        ),
+      ),
+      child: Text(
+        isBuying
+            ? 'BUYING PHASE — ${game.buyingTimeLeft.ceil()}s LEFT'
+            : 'SURVIVE — NEXT REWARD IN ${(GameConfig.survivalRewardInterval - game.survivedSeconds % GameConfig.survivalRewardInterval).ceil()}s',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: isBuying ? Colors.cyanAccent : Colors.white70,
+          fontWeight: FontWeight.w900,
+          fontSize: 12,
+          letterSpacing: 0.8,
+        ),
       ),
     );
   }
@@ -162,28 +241,15 @@ class _HealthBar extends StatelessWidget {
               value: clamped,
               minHeight: 8,
               backgroundColor: Colors.white.withOpacity(0.14),
-              valueColor: const AlwaysStoppedAnimation<Color>(
-                Colors.lightGreenAccent,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                clamped > 0.35
+                    ? Colors.lightGreenAccent
+                    : Colors.redAccent,
               ),
             ),
           ),
         ),
       ],
     );
-  }
-}
-
-class _HudTicker extends ValueNotifier<int> {
-  final OrbitGuardGame game;
-
-  _HudTicker(this.game) : super(0) {
-    _tick();
-  }
-
-  Future<void> _tick() async {
-    while (true) {
-      await Future.delayed(const Duration(milliseconds: 150));
-      value++;
-    }
   }
 }
