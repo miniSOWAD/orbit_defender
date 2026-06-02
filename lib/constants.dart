@@ -2,6 +2,7 @@ import 'dart:ui';
 
 enum GameState {
   mainMenu,
+  buying,
   playing,
   paused,
   gameOver,
@@ -10,6 +11,8 @@ enum GameState {
 class GameConfig {
   static const double earthMaxHp = 200;
   static const double shipMaxHp = 100;
+
+  static const int startingGold = 300;
 
   static const double earthSize = 140;
   static const double shipSize = 58;
@@ -21,6 +24,9 @@ class GameConfig {
 
   static const double rocketSpeed = 560;
   static const double meteorSpeed = 65;
+
+  static const double firstBuyingDuration = 10;
+  static const double repeatBuyingDuration = 5;
 
   static const double survivalRewardInterval = 30;
   static const int survivalRewardGold = 300;
