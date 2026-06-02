@@ -32,7 +32,7 @@ class ShipComponent extends SpriteComponent
 
   @override
   void update(double dt) {
-    if (gameRef.state == GameState.playing) {
+    if (gameRef.state == GameState.playing || gameRef.state == GameState.buying) {
       if (gameRef.rotatingLeft) {
         orbitAngle -= GameConfig.shipRotationSpeed * dt;
       }
