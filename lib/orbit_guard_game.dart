@@ -24,18 +24,34 @@ class OrbitGuardGame extends FlameGame
 
   int gold = 0;
   int score = 0;
+
   int selectedRocketIndex = 0;
+
+  final List<int> rocketInventory = [0, 0, 0, 0];
 
   bool rotatingLeft = false;
   bool rotatingRight = false;
 
+  bool isFirstBuyingPhase = true;
+
+  double buyingTimer = 0;
+  double currentBuyingDuration = GameConfig.firstBuyingDuration;
+
   final Random _random = Random();
 
   final List<double> _meteorTimers = [0, 0, 0, 0];
-  double _survivalTimer = 0;
+
+  double _survivalRewardTimer = 0;
   double survivedSeconds = 0;
 
   Vector2 get centerPoint => size / 2;
+
+  bool get isBuyingPhase => state == GameState.buying;
+
+  double get buyingTimeLeft {
+    final timeLeft = currentBuyingDuration - buyingTimer;
+    return timeLeft < 0 ? 0 : timeLeft;
+  }
 
   @override
   Color backgroundColor() {
@@ -53,16 +69,25 @@ class OrbitGuardGame extends FlameGame
 
     add(earth);
     add(ship);
+
+    pauseEngine();
   }
 
   @override
   void update(double dt) {
+    if (state == GameState.buying) {
+      super.update(dt);
+      _updateBuyingPhase(dt);
+      return;
+    }
+
     if (state != GameState.playing) return;
 
     super.update(dt);
 
     survivedSeconds += dt;
-    _updateGoldReward(dt);
+
+    _updateRewardTimer(dt);
     _updateMeteorSpawning(dt);
     _checkGameOver();
   }
@@ -73,78 +98,72 @@ class OrbitGuardGame extends FlameGame
 
     earthHp = GameConfig.earthMaxHp;
     shipHp = GameConfig.shipMaxHp;
-    gold = 0;
+
+    gold = GameConfig.startingGold;
     score = 0;
+
     selectedRocketIndex = 0;
-    survivedSeconds = 0;
+
+    for (int i = 0; i < rocketInventory.length; i++) {
+      rocketInventory[i] = 0;
+    }
 
     for (int i = 0; i < _meteorTimers.length; i++) {
       _meteorTimers[i] = 0;
     }
 
-    _survivalTimer = 0;
+    _survivalRewardTimer = 0;
+    survivedSeconds = 0;
 
-    state = GameState.playing;
-    resumeEngine();
+    isFirstBuyingPhase = true;
+
+    _startBuyingPhase(GameConfig.firstBuyingDuration);
 
     overlays.remove('MainMenu');
     overlays.remove('PauseMenu');
     overlays.remove('GameOverMenu');
+
     overlays.add('GameHud');
     overlays.add('Controls');
-  }
 
-  void pauseGame() {
-    if (state != GameState.playing) return;
-
-    state = GameState.paused;
-    pauseEngine();
-
-    overlays.remove('Controls');
-    overlays.add('PauseMenu');
-  }
-
-  void resumeGame() {
-    if (state != GameState.paused) return;
-
-    state = GameState.playing;
     resumeEngine();
-
-    overlays.remove('PauseMenu');
-    overlays.add('Controls');
   }
 
-  void goToMainMenu() {
-    state = GameState.mainMenu;
-    pauseEngine();
+  void _startBuyingPhase(double duration) {
+    state = GameState.buying;
+    buyingTimer = 0;
+    currentBuyingDuration = duration;
 
-    overlays.remove('GameHud');
-    overlays.remove('Controls');
-    overlays.remove('PauseMenu');
-    overlays.remove('GameOverMenu');
-    overlays.add('MainMenu');
+    rotatingLeft = false;
+    rotatingRight = false;
   }
 
-  void _gameOver() {
-    state = GameState.gameOver;
-    pauseEngine();
+  void _updateBuyingPhase(double dt) {
+    buyingTimer += dt;
 
-    overlays.remove('Controls');
-    overlays.add('GameOverMenu');
-  }
-
-  void _checkGameOver() {
-    if (earthHp <= 0 || shipHp <= 0) {
-      _gameOver();
+    if (buyingTimer >= currentBuyingDuration) {
+      _endBuyingPhase();
     }
   }
 
-  void _updateGoldReward(double dt) {
-    _survivalTimer += dt;
+  void _endBuyingPhase() {
+    state = GameState.playing;
+    isFirstBuyingPhase = false;
 
-    if (_survivalTimer >= GameConfig.survivalRewardInterval) {
-      _survivalTimer = 0;
-      gold += GameConfig.survivalRewardGold;
+    buyingTimer = 0;
+  }
+
+  void _startRewardBuyingPhase() {
+    gold += GameConfig.survivalRewardGold;
+    _startBuyingPhase(GameConfig.repeatBuyingDuration);
+  }
+
+  void _updateRewardTimer(double dt) {
+    _survivalRewardTimer += dt;
+
+    if (_survivalRewardTimer >= GameConfig.survivalRewardInterval) {
+      _survivalRewardTimer = 0;
+      _startRewardBuyingPhase();
     }
   }
 
@@ -192,14 +211,29 @@ class OrbitGuardGame extends FlameGame
     selectedRocketIndex = index;
   }
 
+  bool buyRocket(int index) {
+    if (!isBuyingPhase) return false;
+
+    final rocketConfig = GameData.rockets[index];
+
+    if (gold < rocketConfig.cost) return false;
+
+    gold -= rocketConfig.cost;
+    rocketInventory[index]++;
+
+    selectedRocketIndex = index;
+
+    return true;
+  }
+
   void fireRocket() {
     if (state != GameState.playing) return;
 
     final rocketConfig = GameData.rockets[selectedRocketIndex];
 
-    if (gold < rocketConfig.cost) return;
+    if (rocketInventory[selectedRocketIndex] <= 0) return;
 
-    gold -= rocketConfig.cost;
+    rocketInventory[selectedRocketIndex]--;
 
     final target = findClosestMeteor();
 
@@ -232,6 +266,60 @@ class OrbitGuardGame extends FlameGame
     });
 
     return meteors.first;
+  }
+
+  void pauseGame() {
+    if (state != GameState.playing && state != GameState.buying) return;
+
+    state = GameState.paused;
+    pauseEngine();
+
+    rotatingLeft = false;
+    rotatingRight = false;
+
+    overlays.remove('Controls');
+    overlays.add('PauseMenu');
+  }
+
+  void resumeGame() {
+    if (state != GameState.paused) return;
+
+    state = GameState.playing;
+    resumeEngine();
+
+    overlays.remove('PauseMenu');
+    overlays.add('Controls');
+  }
+
+  void goToMainMenu() {
+    state = GameState.mainMenu;
+    pauseEngine();
+
+    rotatingLeft = false;
+    rotatingRight = false;
+
+    overlays.remove('GameHud');
+    overlays.remove('Controls');
+    overlays.remove('PauseMenu');
+    overlays.remove('GameOverMenu');
+    overlays.add('MainMenu');
+  }
+
+  void _gameOver() {
+    state = GameState.gameOver;
+    pauseEngine();
+
+    rotatingLeft = false;
+    rotatingRight = false;
+
+    overlays.remove('Controls');
+    overlays.add('GameOverMenu');
+  }
+
+  void _checkGameOver() {
+    if (earthHp <= 0 || shipHp <= 0) {
+      _gameOver();
+    }
   }
 
   void damageEarth(double damage) {
