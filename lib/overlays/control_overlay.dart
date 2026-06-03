@@ -15,93 +15,71 @@ class ControlOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return Positioned.fill(
       child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(18),
-          child: Column(
-            children: [
-              if (game.isBuyingPhase)
-                _BuyingBanner(game: game),
-              const Spacer(),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  _RotateButton(
-                    icon: Icons.rotate_left,
-                    onDown: () => game.rotatingLeft = true,
-                    onUp: () => game.rotatingLeft = false,
+        child: _ControlAutoRefresh(
+          childBuilder: () {
+            return Stack(
+              children: [
+                if (game.isBuyingPhase)
+                  Positioned(
+                    top: 118,
+                    left: 16,
+                    right: 16,
+                    child: _BuyingBanner(game: game),
                   ),
-                  const SizedBox(width: 18),
-                  _RotateButton(
-                    icon: Icons.rotate_right,
-                    onDown: () => game.rotatingRight = true,
-                    onUp: () => game.rotatingRight = false,
+
+                Positioned(
+                  left: 18,
+                  bottom: 18,
+                  child: Row(
+                    children: [
+                      _RotateButton(
+                        icon: Icons.rotate_left,
+                        onDown: () => game.rotatingLeft = true,
+                        onUp: () => game.rotatingLeft = false,
+                      ),
+                      const SizedBox(width: 16),
+                      _RotateButton(
+                        icon: Icons.rotate_right,
+                        onDown: () => game.rotatingRight = true,
+                        onUp: () => game.rotatingRight = false,
+                      ),
+                    ],
                   ),
-                  const Spacer(),
-                  Column(
+                ),
+
+                Positioned(
+                  right: 18,
+                  bottom: 18,
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       _RocketSelector(game: game),
                       const SizedBox(height: 14),
-                      GestureDetector(
-                        onTap: game.fireRocket,
-                        child: Container(
-                          width: 92,
-                          height: 92,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: game.isBuyingPhase
-                                ? Colors.grey.withOpacity(0.55)
-                                : Colors.redAccent.withOpacity(0.88),
-                            boxShadow: [
-                              if (!game.isBuyingPhase)
-                                BoxShadow(
-                                  color: Colors.redAccent.withOpacity(0.4),
-                                  blurRadius: 24,
-                                  spreadRadius: 4,
-                                ),
-                            ],
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.35),
-                              width: 2,
-                            ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              game.isBuyingPhase ? 'BUY' : 'FIRE',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w900,
-                                fontSize: 18,
-                                letterSpacing: 1.2,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+                      _FireButton(game: game),
                     ],
                   ),
-                ],
-              ),
-            ],
-          ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 }
 
-class _BuyingBanner extends StatefulWidget {
-  final OrbitGuardGame game;
+class _ControlAutoRefresh extends StatefulWidget {
+  final Widget Function() childBuilder;
 
-  const _BuyingBanner({
-    required this.game,
+  const _ControlAutoRefresh({
+    required this.childBuilder,
   });
 
   @override
-  State<_BuyingBanner> createState() => _BuyingBannerState();
+  State<_ControlAutoRefresh> createState() => _ControlAutoRefreshState();
 }
 
-class _BuyingBannerState extends State<_BuyingBanner> {
+class _ControlAutoRefreshState extends State<_ControlAutoRefresh> {
   @override
   void initState() {
     super.initState();
@@ -117,46 +95,61 @@ class _BuyingBannerState extends State<_BuyingBanner> {
 
   @override
   Widget build(BuildContext context) {
+    return widget.childBuilder();
+  }
+}
+
+class _BuyingBanner extends StatelessWidget {
+  final OrbitGuardGame game;
+
+  const _BuyingBanner({
+    required this.game,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(top: 82),
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 10,
+      ),
       decoration: BoxDecoration(
-        color: Colors.cyanAccent.withOpacity(0.16),
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.black.withOpacity(0.55),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.cyanAccent.withOpacity(0.5),
+          color: Colors.cyanAccent.withOpacity(0.45),
         ),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            widget.game.isFirstBuyingPhase
-                ? 'Prepare Your Rockets'
-                : 'Reward Claimed! Buy More Rockets',
+            game.isFirstBuyingPhase
+                ? 'Prepare Rockets'
+                : 'Reward +300 Gold — Buy Rockets',
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w900,
-              fontSize: 16,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Buying time left: ${widget.game.buyingTimeLeft.ceil()}s',
-            style: const TextStyle(
-              color: Colors.cyanAccent,
-              fontWeight: FontWeight.w800,
               fontSize: 14,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 3),
+          Text(
+            'Shop closes in ${game.buyingTimeLeft.ceil()}s',
+            style: const TextStyle(
+              color: Colors.cyanAccent,
+              fontWeight: FontWeight.w900,
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(height: 3),
           const Text(
-            'Tap rocket cards below to buy. Select rocket type before firing.',
+            'Tap rocket cards to buy. FIRE unlocks after buying phase.',
+            textAlign: TextAlign.center,
             style: TextStyle(
               color: Colors.white70,
-              fontSize: 12,
+              fontSize: 11,
             ),
-            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -188,7 +181,7 @@ class _RotateButton extends StatelessWidget {
           shape: BoxShape.circle,
           color: Colors.white.withOpacity(0.13),
           border: Border.all(
-            color: Colors.white.withOpacity(0.25),
+            color: Colors.white.withOpacity(0.3),
             width: 2,
           ),
         ),
@@ -202,7 +195,58 @@ class _RotateButton extends StatelessWidget {
   }
 }
 
-class _RocketSelector extends StatefulWidget {
+class _FireButton extends StatelessWidget {
+  final OrbitGuardGame game;
+
+  const _FireButton({
+    required this.game,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final canFire = game.state == GameState.playing &&
+        game.rocketInventory[game.selectedRocketIndex] > 0;
+
+    return GestureDetector(
+      onTap: game.fireRocket,
+      child: Container(
+        width: 92,
+        height: 92,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: canFire
+              ? Colors.redAccent.withOpacity(0.9)
+              : Colors.grey.withOpacity(0.62),
+          boxShadow: [
+            if (canFire)
+              BoxShadow(
+                color: Colors.redAccent.withOpacity(0.4),
+                blurRadius: 24,
+                spreadRadius: 4,
+              ),
+          ],
+          border: Border.all(
+            color: Colors.white.withOpacity(0.38),
+            width: 2,
+          ),
+        ),
+        child: Center(
+          child: Text(
+            game.isBuyingPhase ? 'SHOP' : 'FIRE',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              fontSize: 18,
+              letterSpacing: 1.1,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RocketSelector extends StatelessWidget {
   final OrbitGuardGame game;
 
   const _RocketSelector({
@@ -210,46 +254,24 @@ class _RocketSelector extends StatefulWidget {
   });
 
   @override
-  State<_RocketSelector> createState() => _RocketSelectorState();
-}
-
-class _RocketSelectorState extends State<_RocketSelector> {
-  @override
-  void initState() {
-    super.initState();
-    _refresh();
-  }
-
-  Future<void> _refresh() async {
-    while (mounted) {
-      await Future.delayed(const Duration(milliseconds: 150));
-      if (mounted) setState(() {});
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Row(
       children: List.generate(GameData.rockets.length, (index) {
         final rocket = GameData.rockets[index];
-        final selected = widget.game.selectedRocketIndex == index;
-        final owned = widget.game.rocketInventory[index];
-        final canBuy = widget.game.gold >= rocket.cost;
+        final selected = game.selectedRocketIndex == index;
+        final owned = game.rocketInventory[index];
+        final canBuy = game.gold >= rocket.cost;
 
         return GestureDetector(
           onTap: () {
-            setState(() {
-              if (widget.game.isBuyingPhase) {
-                widget.game.buyRocket(index);
-              } else {
-                widget.game.selectRocket(index);
-              }
-            });
+            if (game.isBuyingPhase) {
+              game.buyRocket(index);
+            } else {
+              game.selectRocket(index);
+            }
           },
           onLongPress: () {
-            setState(() {
-              widget.game.selectRocket(index);
-            });
+            game.selectRocket(index);
           },
           child: Container(
             width: 68,
@@ -292,7 +314,7 @@ class _RocketSelectorState extends State<_RocketSelector> {
                   '${rocket.cost}G',
                   style: TextStyle(
                     color: canBuy ? Colors.amberAccent : Colors.redAccent,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
                     fontSize: 11,
                   ),
                 ),
