@@ -15,68 +15,50 @@ class GameHud extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: _HudAutoRefresh(
-        game: game,
         childBuilder: () {
           return Padding(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Row(
                   children: [
-                    _StatBox(
-                      label: 'Earth',
-                      value: '${game.earthHp.toInt()}/200',
-                    ),
-                    const SizedBox(width: 8),
-                    _StatBox(
-                      label: 'Ship',
-                      value: '${game.shipHp.toInt()}/100',
-                    ),
-                    const SizedBox(width: 8),
-                    _StatBox(
-                      label: 'Gold',
-                      value: '${game.gold}',
-                    ),
-                    const SizedBox(width: 8),
-                    _StatBox(
-                      label: 'Score',
-                      value: '${game.score}',
-                    ),
+                    _StatBox(label: 'Earth', value: '${game.earthHp.toInt()}/200'),
+                    const SizedBox(width: 6),
+                    _StatBox(label: 'Ship', value: '${game.shipHp.toInt()}/100'),
+                    const SizedBox(width: 6),
+                    _StatBox(label: 'Gold', value: '${game.gold}'),
+                    const SizedBox(width: 6),
+                    _StatBox(label: 'Score', value: '${game.score}'),
                     const Spacer(),
-                    GestureDetector(
-                      onTap: game.pauseGame,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.25),
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.pause,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
+                    _PauseButton(game: game),
                   ],
                 ),
-                const SizedBox(height: 8),
-                _HealthBar(
-                  label: 'Earth HP',
+                const SizedBox(height: 6),
+                _MiniHealthBar(
+                  label: 'Earth',
                   value: game.earthHp / GameConfig.earthMaxHp,
                 ),
-                const SizedBox(height: 6),
-                _HealthBar(
-                  label: 'Ship HP',
+                const SizedBox(height: 4),
+                _MiniHealthBar(
+                  label: 'Ship',
                   value: game.shipHp / GameConfig.shipMaxHp,
                 ),
-                const SizedBox(height: 8),
-                _ModeBar(game: game),
+                const SizedBox(height: 5),
+                _ModeText(game: game),
+                if (game.earthDyingWarning)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 4),
+                    child: Text(
+                      'WARNING: EARTH DYING!',
+                      style: TextStyle(
+                        color: Colors.redAccent,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 15,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                  ),
               ],
             ),
           );
@@ -87,11 +69,9 @@ class GameHud extends StatelessWidget {
 }
 
 class _HudAutoRefresh extends StatefulWidget {
-  final OrbitGuardGame game;
   final Widget Function() childBuilder;
 
   const _HudAutoRefresh({
-    required this.game,
     required this.childBuilder,
   });
 
@@ -119,44 +99,31 @@ class _HudAutoRefreshState extends State<_HudAutoRefresh> {
   }
 }
 
-class _ModeBar extends StatelessWidget {
+class _PauseButton extends StatelessWidget {
   final OrbitGuardGame game;
 
-  const _ModeBar({
+  const _PauseButton({
     required this.game,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isBuying = game.isBuyingPhase;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 14,
-        vertical: 8,
-      ),
-      decoration: BoxDecoration(
-        color: isBuying
-            ? Colors.cyanAccent.withOpacity(0.16)
-            : Colors.white.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isBuying
-              ? Colors.cyanAccent.withOpacity(0.45)
-              : Colors.white.withOpacity(0.16),
+    return GestureDetector(
+      onTap: game.pauseGame,
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.16),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.3),
+          ),
         ),
-      ),
-      child: Text(
-        isBuying
-            ? 'BUYING PHASE — ${game.buyingTimeLeft.ceil()}s LEFT'
-            : 'SURVIVE — NEXT REWARD IN ${(GameConfig.survivalRewardInterval - game.survivedSeconds % GameConfig.survivalRewardInterval).ceil()}s',
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          color: isBuying ? Colors.cyanAccent : Colors.white70,
-          fontWeight: FontWeight.w900,
-          fontSize: 12,
-          letterSpacing: 0.8,
+        child: const Icon(
+          Icons.pause,
+          color: Colors.white,
+          size: 26,
         ),
       ),
     );
@@ -175,15 +142,13 @@ class _StatBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 9,
-      ),
+      width: 64,
+      padding: const EdgeInsets.symmetric(vertical: 7),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.35),
-        borderRadius: BorderRadius.circular(14),
+        color: Colors.black.withOpacity(0.38),
+        borderRadius: BorderRadius.circular(13),
         border: Border.all(
-          color: Colors.white.withOpacity(0.18),
+          color: Colors.white.withOpacity(0.16),
         ),
       ),
       child: Column(
@@ -192,15 +157,15 @@ class _StatBox extends StatelessWidget {
             label,
             style: const TextStyle(
               color: Colors.white70,
-              fontSize: 11,
+              fontSize: 10,
             ),
           ),
           Text(
             value,
             style: const TextStyle(
               color: Colors.white,
-              fontWeight: FontWeight.w800,
-              fontSize: 13,
+              fontWeight: FontWeight.w900,
+              fontSize: 12,
             ),
           ),
         ],
@@ -209,11 +174,11 @@ class _StatBox extends StatelessWidget {
   }
 }
 
-class _HealthBar extends StatelessWidget {
+class _MiniHealthBar extends StatelessWidget {
   final String label;
   final double value;
 
-  const _HealthBar({
+  const _MiniHealthBar({
     required this.label,
     required this.value,
   });
@@ -225,12 +190,12 @@ class _HealthBar extends StatelessWidget {
     return Row(
       children: [
         SizedBox(
-          width: 68,
+          width: 42,
           child: Text(
             label,
             style: const TextStyle(
               color: Colors.white70,
-              fontSize: 11,
+              fontSize: 10,
             ),
           ),
         ),
@@ -239,8 +204,8 @@ class _HealthBar extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             child: LinearProgressIndicator(
               value: clamped,
-              minHeight: 8,
-              backgroundColor: Colors.white.withOpacity(0.14),
+              minHeight: 7,
+              backgroundColor: Colors.white.withOpacity(0.13),
               valueColor: AlwaysStoppedAnimation<Color>(
                 clamped > 0.35
                     ? Colors.lightGreenAccent
@@ -250,6 +215,37 @@ class _HealthBar extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _ModeText extends StatelessWidget {
+  final OrbitGuardGame game;
+
+  const _ModeText({
+    required this.game,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    String text;
+
+    if (game.state == GameState.buying) {
+      text = 'BUYING PHASE: ${game.buyingTimeLeft.ceil()}s LEFT';
+    } else if (game.state == GameState.earthDestroyed) {
+      text = 'EARTH DESTROYED...';
+    } else {
+      text = 'NEXT REWARD IN ${game.nextRewardTimeLeft.ceil()}s';
+    }
+
+    return Text(
+      text,
+      style: const TextStyle(
+        color: Colors.white70,
+        fontWeight: FontWeight.w800,
+        fontSize: 11,
+        letterSpacing: 0.6,
+      ),
     );
   }
 }
