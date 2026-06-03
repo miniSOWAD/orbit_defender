@@ -12,72 +12,90 @@ class MainMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xFF050712),
-      child: Center(
-        child: Container(
-          width: 330,
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.08),
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.18),
+    return Positioned.fill(
+      child: Stack(
+        children: [
+          Image.asset(
+            'assets/images/menu.png',
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+          ),
+          Container(
+            color: Colors.black.withOpacity(0.42),
+          ),
+          Center(
+            child: Container(
+              width: 320,
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.52),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: Colors.cyanAccent.withOpacity(0.35),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.cyanAccent.withOpacity(0.16),
+                    blurRadius: 28,
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'ORBIT DEFENDER',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 27,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Protect Earth. Destroy meteors.',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+
+                  if (game.hasActiveRun) ...[
+                    _MenuButton(
+                      label: 'RESUME',
+                      onTap: game.resumeExistingRun,
+                    ),
+                    const SizedBox(height: 10),
+                  ],
+
+                  _MenuButton(
+                    label: 'NEW GAME',
+                    onTap: game.startNewGame,
+                  ),
+                  const SizedBox(height: 10),
+                  _MenuButton(
+                    label: 'HELP',
+                    onTap: () => _showHelp(context),
+                  ),
+                  const SizedBox(height: 10),
+                  _MenuButton(
+                    label: 'SCORE BOARD',
+                    onTap: () => _showScoreBoard(context, game),
+                  ),
+                  const SizedBox(height: 10),
+                  _MenuButton(
+                    label: 'EXIT',
+                    onTap: () => _showExitMessage(context),
+                  ),
+                ],
+              ),
             ),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'ORBIT GUARD',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 34,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 2,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Protect Earth from meteor strikes.',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 26),
-
-              if (game.hasActiveRun) ...[
-                _MenuButton(
-                  label: 'RESUME',
-                  onTap: game.resumeExistingRun,
-                ),
-                const SizedBox(height: 12),
-              ],
-
-              _MenuButton(
-                label: 'NEW GAME',
-                onTap: game.startNewGame,
-              ),
-              const SizedBox(height: 12),
-              _MenuButton(
-                label: 'HELP',
-                onTap: () => _showHelp(context),
-              ),
-              const SizedBox(height: 12),
-              _MenuButton(
-                label: 'SCORE BOARD',
-                onTap: () => _showScoreBoard(context, game),
-              ),
-              const SizedBox(height: 12),
-              _MenuButton(
-                label: 'EXIT',
-                onTap: () => _showExitMessage(context),
-              ),
-            ],
-          ),
-        ),
+        ],
       ),
     );
   }
@@ -89,14 +107,16 @@ class MainMenu extends StatelessWidget {
         return AlertDialog(
           backgroundColor: const Color(0xFF101426),
           title: const Text(
-            'Help',
+            'HELP',
             style: TextStyle(color: Colors.white),
           ),
           content: const Text(
-            'Rotate the ship around Earth using the left and right buttons.\n\n'
-            'Buy rockets during the shop phase.\n\n'
-            'Fire rockets to destroy meteors before they hit Earth.\n\n'
-            'Survive every 30 seconds to earn 300 gold.',
+            'Rotate the ship around Earth.\n\n'
+            'Buy rockets during shop time.\n\n'
+            'Fire only targets meteors in front of the ship.\n\n'
+            'Meteors damage Earth if they reach it.\n\n'
+            'Meteors damage the ship if they hit the ship.\n\n'
+            'Survive 30 seconds to earn 300 gold.',
             style: TextStyle(color: Colors.white70),
           ),
           actions: [
@@ -117,12 +137,12 @@ class MainMenu extends StatelessWidget {
         return AlertDialog(
           backgroundColor: const Color(0xFF101426),
           title: const Text(
-            'Score Board',
+            'SCORE BOARD',
             style: TextStyle(color: Colors.white),
           ),
           content: Text(
-            'Last Score: ${game.score}\n'
-            'Survived: ${game.survivedSeconds.toInt()}s',
+            'Last Score: ${game.lastScore}\n'
+            'Last Survival Time: ${game.lastSurvivedSeconds.toInt()}s',
             style: const TextStyle(color: Colors.white70),
           ),
           actions: [
@@ -160,10 +180,21 @@ class _MenuButton extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 14),
+        padding: const EdgeInsets.symmetric(vertical: 11),
         decoration: BoxDecoration(
-          color: Colors.cyanAccent,
-          borderRadius: BorderRadius.circular(17),
+          gradient: const LinearGradient(
+            colors: [
+              Color(0xFF00E5FF),
+              Color(0xFF00FFA3),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.cyanAccent.withOpacity(0.22),
+              blurRadius: 16,
+            ),
+          ],
         ),
         child: Text(
           label,
@@ -171,7 +202,8 @@ class _MenuButton extends StatelessWidget {
           style: const TextStyle(
             color: Colors.black,
             fontWeight: FontWeight.w900,
-            fontSize: 15,
+            fontSize: 13,
+            letterSpacing: 1,
           ),
         ),
       ),
