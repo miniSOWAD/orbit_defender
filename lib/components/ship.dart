@@ -5,7 +5,6 @@ import 'package:flame/components.dart';
 
 import '../constants.dart';
 import '../orbit_guard_game.dart';
-import 'meteor.dart';
 
 class ShipComponent extends SpriteComponent
     with HasGameRef<OrbitGuardGame>, CollisionCallbacks {
@@ -23,7 +22,7 @@ class ShipComponent extends SpriteComponent
 
     add(
       CircleHitbox.relative(
-        0.8,
+        0.72,
         parentSize: size,
         anchor: Anchor.center,
       ),
@@ -32,7 +31,8 @@ class ShipComponent extends SpriteComponent
 
   @override
   void update(double dt) {
-    if (gameRef.state == GameState.playing || gameRef.state == GameState.buying) {
+    if (gameRef.state == GameState.playing ||
+        gameRef.state == GameState.buying) {
       if (gameRef.rotatingLeft) {
         orbitAngle -= GameConfig.shipRotationSpeed * dt;
       }
@@ -52,18 +52,5 @@ class ShipComponent extends SpriteComponent
     angle = orbitAngle + pi / 2;
 
     super.update(dt);
-  }
-
-  @override
-  void onCollisionStart(
-    Set<Vector2> intersectionPoints,
-    PositionComponent other,
-  ) {
-    super.onCollisionStart(intersectionPoints, other);
-
-    if (other is MeteorComponent) {
-      gameRef.damageShip(other.config.earthDamage);
-      other.removeFromParent();
-    }
   }
 }
