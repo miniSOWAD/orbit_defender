@@ -11,12 +11,12 @@ import 'components/ship.dart';
 import 'components/star_background.dart';
 import 'constants.dart';
 
-class OrbitGuardGame extends FlameGame
-    with HasCollisionDetection{
+class OrbitGuardGame extends FlameGame with HasCollisionDetection {
   late EarthComponent earth;
   late ShipComponent ship;
 
   GameState state = GameState.mainMenu;
+  GameState _stateBeforePause = GameState.playing;
 
   double earthHp = GameConfig.earthMaxHp;
   double shipHp = GameConfig.shipMaxHp;
@@ -25,37 +25,43 @@ class OrbitGuardGame extends FlameGame
   int score = 0;
 
   int selectedRocketIndex = 0;
-
   final List<int> rocketInventory = [0, 0, 0, 0];
 
   bool rotatingLeft = false;
   bool rotatingRight = false;
 
+  bool hasActiveRun = false;
   bool isFirstBuyingPhase = true;
 
   double buyingTimer = 0;
   double currentBuyingDuration = GameConfig.firstBuyingDuration;
 
-  final Random _random = Random();
-
-  final List<double> _meteorTimers = [0, 0, 0, 0];
-
   double _survivalRewardTimer = 0;
   double survivedSeconds = 0;
+
+  double _earthDeathTimer = 0;
+
+  final List<double> _meteorTimers = [0, 0, 0, 0];
+  final Random _random = Random();
 
   Vector2 get centerPoint => size / 2;
 
   bool get isBuyingPhase => state == GameState.buying;
 
   double get buyingTimeLeft {
-    final timeLeft = currentBuyingDuration - buyingTimer;
-    return timeLeft < 0 ? 0 : timeLeft;
+    final left = currentBuyingDuration - buyingTimer;
+    return left < 0 ? 0 : left;
   }
 
-  @override
-  Color backgroundColor() {
-    return GameConfig.spaceBackgroundColor;
+  double get nextRewardTimeLeft {
+    final left = GameConfig.survivalRewardInterval - _survivalRewardTimer;
+    return left < 0 ? 0 : left;
   }
+
+  bool get earthDyingWarning => earthHp > 0 && earthHp <= 25;
+
+  @override
+  Color backgroundColor() => GameConfig.spaceBackgroundColor;
 
   @override
   Future<void> onLoad() async {
@@ -74,21 +80,39 @@ class OrbitGuardGame extends FlameGame
 
   @override
   void update(double dt) {
+    if (state == GameState.mainMenu ||
+        state == GameState.paused ||
+        state == GameState.gameOver) {
+      super.update(dt);
+      return;
+    }
+
+    if (state == GameState.earthDestroyed) {
+      super.update(dt);
+      _earthDeathTimer += dt;
+
+      if (_earthDeathTimer >= GameConfig.earthDeathDelay) {
+        _showGameOver();
+      }
+
+      return;
+    }
+
     if (state == GameState.buying) {
       super.update(dt);
       _updateBuyingPhase(dt);
       return;
     }
 
-    if (state != GameState.playing) return;
+    if (state == GameState.playing) {
+      super.update(dt);
 
-    super.update(dt);
+      survivedSeconds += dt;
 
-    survivedSeconds += dt;
-
-    _updateRewardTimer(dt);
-    _updateMeteorSpawning(dt);
-    _checkGameOver();
+      _updateRewardTimer(dt);
+      _updateMeteorSpawning(dt);
+      _checkDeath();
+    }
   }
 
   void startNewGame() {
@@ -111,12 +135,15 @@ class OrbitGuardGame extends FlameGame
       _meteorTimers[i] = 0;
     }
 
+    rotatingLeft = false;
+    rotatingRight = false;
+
     _survivalRewardTimer = 0;
     survivedSeconds = 0;
+    _earthDeathTimer = 0;
 
+    hasActiveRun = true;
     isFirstBuyingPhase = true;
-
-    _startBuyingPhase(GameConfig.firstBuyingDuration);
 
     overlays.remove('MainMenu');
     overlays.remove('PauseMenu');
@@ -125,6 +152,19 @@ class OrbitGuardGame extends FlameGame
     overlays.add('GameHud');
     overlays.add('Controls');
 
+    _startBuyingPhase(GameConfig.firstBuyingDuration);
+
+    resumeEngine();
+  }
+
+  void resumeExistingRun() {
+    if (!hasActiveRun) return;
+
+    overlays.remove('MainMenu');
+    overlays.add('GameHud');
+    overlays.add('Controls');
+
+    state = _stateBeforePause;
     resumeEngine();
   }
 
@@ -148,13 +188,7 @@ class OrbitGuardGame extends FlameGame
   void _endBuyingPhase() {
     state = GameState.playing;
     isFirstBuyingPhase = false;
-
     buyingTimer = 0;
-  }
-
-  void _startRewardBuyingPhase() {
-    gold += GameConfig.survivalRewardGold;
-    _startBuyingPhase(GameConfig.repeatBuyingDuration);
   }
 
   void _updateRewardTimer(double dt) {
@@ -162,7 +196,8 @@ class OrbitGuardGame extends FlameGame
 
     if (_survivalRewardTimer >= GameConfig.survivalRewardInterval) {
       _survivalRewardTimer = 0;
-      _startRewardBuyingPhase();
+      gold += GameConfig.survivalRewardGold;
+      _startBuyingPhase(GameConfig.repeatBuyingDuration);
     }
   }
 
@@ -180,18 +215,16 @@ class OrbitGuardGame extends FlameGame
   }
 
   void spawnMeteor(MeteorConfig config) {
-    final spawnPosition = _getRandomOuterSpawnPosition();
-
     add(
       MeteorComponent(
         config: config,
-        startPosition: spawnPosition,
+        startPosition: _getRandomOuterSpawnPosition(),
       ),
     );
   }
 
   Vector2 _getRandomOuterSpawnPosition() {
-    final margin = 100.0;
+    const margin = 100.0;
     final side = _random.nextInt(4);
 
     switch (side) {
@@ -213,13 +246,12 @@ class OrbitGuardGame extends FlameGame
   bool buyRocket(int index) {
     if (!isBuyingPhase) return false;
 
-    final rocketConfig = GameData.rockets[index];
+    final config = GameData.rockets[index];
 
-    if (gold < rocketConfig.cost) return false;
+    if (gold < config.cost) return false;
 
-    gold -= rocketConfig.cost;
+    gold -= config.cost;
     rocketInventory[index]++;
-
     selectedRocketIndex = index;
 
     return true;
@@ -228,21 +260,17 @@ class OrbitGuardGame extends FlameGame
   void fireRocket() {
     if (state != GameState.playing) return;
 
-    final rocketConfig = GameData.rockets[selectedRocketIndex];
-
     if (rocketInventory[selectedRocketIndex] <= 0) return;
+
+    final rocketConfig = GameData.rockets[selectedRocketIndex];
 
     rocketInventory[selectedRocketIndex]--;
 
     final target = findClosestMeteor();
 
-    Vector2 direction;
-
-    if (target != null) {
-      direction = (target.position - ship.position).normalized();
-    } else {
-      direction = (ship.position - centerPoint).normalized();
-    }
+    final direction = target == null
+        ? (ship.position - centerPoint).normalized()
+        : (target.position - ship.position).normalized();
 
     add(
       RocketComponent(
@@ -270,11 +298,13 @@ class OrbitGuardGame extends FlameGame
   void pauseGame() {
     if (state != GameState.playing && state != GameState.buying) return;
 
+    _stateBeforePause = state;
     state = GameState.paused;
-    pauseEngine();
 
     rotatingLeft = false;
     rotatingRight = false;
+
+    pauseEngine();
 
     overlays.remove('Controls');
     overlays.add('PauseMenu');
@@ -283,7 +313,8 @@ class OrbitGuardGame extends FlameGame
   void resumeGame() {
     if (state != GameState.paused) return;
 
-    state = GameState.playing;
+    state = _stateBeforePause;
+
     resumeEngine();
 
     overlays.remove('PauseMenu');
@@ -291,11 +322,14 @@ class OrbitGuardGame extends FlameGame
   }
 
   void goToMainMenu() {
+    _stateBeforePause = state;
+
     state = GameState.mainMenu;
-    pauseEngine();
 
     rotatingLeft = false;
     rotatingRight = false;
+
+    pauseEngine();
 
     overlays.remove('GameHud');
     overlays.remove('Controls');
@@ -304,31 +338,64 @@ class OrbitGuardGame extends FlameGame
     overlays.add('MainMenu');
   }
 
-  void _gameOver() {
-    state = GameState.gameOver;
-    pauseEngine();
+  void damageEarth(double damage) {
+    if (state == GameState.earthDestroyed || state == GameState.gameOver) {
+      return;
+    }
+
+    earthHp -= damage;
+
+    if (earthHp <= 0) {
+      earthHp = 0;
+      _startEarthDestroyedSequence();
+    }
+  }
+
+  void damageShip(double damage) {
+    if (state == GameState.earthDestroyed || state == GameState.gameOver) {
+      return;
+    }
+
+    shipHp -= damage;
+
+    if (shipHp <= 0) {
+      shipHp = 0;
+      _showGameOver();
+    }
+  }
+
+  void _checkDeath() {
+    if (earthHp <= 0) {
+      _startEarthDestroyedSequence();
+    } else if (shipHp <= 0) {
+      _showGameOver();
+    }
+  }
+
+  void _startEarthDestroyedSequence() {
+    state = GameState.earthDestroyed;
+    _earthDeathTimer = 0;
 
     rotatingLeft = false;
     rotatingRight = false;
 
+    children.whereType<MeteorComponent>().forEach((m) => m.removeFromParent());
+    children.whereType<RocketComponent>().forEach((r) => r.removeFromParent());
+
+    overlays.remove('Controls');
+  }
+
+  void _showGameOver() {
+    state = GameState.gameOver;
+    hasActiveRun = false;
+
+    rotatingLeft = false;
+    rotatingRight = false;
+
+    pauseEngine();
+
     overlays.remove('Controls');
     overlays.add('GameOverMenu');
-  }
-
-  void _checkGameOver() {
-    if (earthHp <= 0 || shipHp <= 0) {
-      _gameOver();
-    }
-  }
-
-  void damageEarth(double damage) {
-    earthHp -= damage;
-    if (earthHp < 0) earthHp = 0;
-  }
-
-  void damageShip(double damage) {
-    shipHp -= damage;
-    if (shipHp < 0) shipHp = 0;
   }
 
   void addScore(int amount) {
