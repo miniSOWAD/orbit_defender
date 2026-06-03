@@ -18,7 +18,6 @@ class MeteorComponent extends SpriteComponent
     required this.config,
     required this.startPosition,
   }) : super(
-          size: Vector2.all(GameConfig.meteorSize),
           anchor: Anchor.center,
         );
 
@@ -27,6 +26,7 @@ class MeteorComponent extends SpriteComponent
     sprite = await gameRef.loadSprite(config.image);
     position = startPosition;
     hp = config.hp;
+    size = Vector2.all(gameRef.responsiveMeteorSize);
 
     add(
       CircleHitbox.relative(
@@ -42,6 +42,8 @@ class MeteorComponent extends SpriteComponent
     if (gameRef.state != GameState.playing) return;
     if (isDead || hasHitSomething) return;
 
+    size = Vector2.all(gameRef.responsiveMeteorSize);
+
     _checkSurfaceHitWithEarth();
     _checkHitWithShip();
 
@@ -56,13 +58,13 @@ class MeteorComponent extends SpriteComponent
   }
 
   void _checkSurfaceHitWithEarth() {
-    final earthRadius = GameConfig.earthSize * 0.44;
-    final meteorRadius = GameConfig.meteorSize * 0.34;
+    final earthRadius = gameRef.responsiveEarthSize * 0.42;
+    final meteorRadius = gameRef.responsiveMeteorSize * 0.32;
 
-    final surfaceDistance = earthRadius + meteorRadius;
+    final hitDistance = earthRadius + meteorRadius;
     final currentDistance = position.distanceTo(gameRef.centerPoint);
 
-    if (currentDistance <= surfaceDistance) {
+    if (currentDistance <= hitDistance) {
       hasHitSomething = true;
       gameRef.damageEarth(config.earthDamage);
       removeFromParent();
@@ -70,8 +72,8 @@ class MeteorComponent extends SpriteComponent
   }
 
   void _checkHitWithShip() {
-    final shipRadius = GameConfig.shipSize * 0.38;
-    final meteorRadius = GameConfig.meteorSize * 0.34;
+    final shipRadius = gameRef.responsiveShipSize * 0.36;
+    final meteorRadius = gameRef.responsiveMeteorSize * 0.32;
 
     final hitDistance = shipRadius + meteorRadius;
     final currentDistance = position.distanceTo(gameRef.ship.position);
