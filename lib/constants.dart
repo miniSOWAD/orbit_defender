@@ -5,6 +5,7 @@ enum GameState {
   buying,
   playing,
   paused,
+  earthDestroyed,
   gameOver,
 }
 
@@ -23,13 +24,14 @@ class GameConfig {
   static const double shipRotationSpeed = 2.7;
 
   static const double rocketSpeed = 560;
-  static const double meteorSpeed = 65;
 
   static const double firstBuyingDuration = 10;
   static const double repeatBuyingDuration = 5;
 
   static const double survivalRewardInterval = 30;
   static const int survivalRewardGold = 300;
+
+  static const double earthDeathDelay = 2;
 
   static const Color spaceBackgroundColor = Color(0xFF050712);
 }
