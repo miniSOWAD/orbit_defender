@@ -48,6 +48,28 @@ class OrbitGuardGame extends FlameGame with HasCollisionDetection {
 
   Vector2 get centerPoint => size / 2;
 
+  double get shortSide => size.x < size.y ? size.x : size.y;
+
+  double get responsiveEarthSize {
+    return (shortSide * 0.26).clamp(72.0, 118.0);
+  }
+
+  double get responsiveShipSize {
+    return (shortSide * 0.105).clamp(34.0, 48.0);
+  }
+
+  double get responsiveMeteorSize {
+    return (shortSide * 0.09).clamp(28.0, 44.0);
+  }
+
+  double get responsiveRocketSize {
+    return (shortSide * 0.055).clamp(18.0, 28.0);
+  }
+
+  double get responsiveOrbitRadius {
+    return (responsiveEarthSize * 0.78).clamp(72.0, 105.0);
+  }
+
   bool get isBuyingPhase => state == GameState.buying;
 
   double get buyingTimeLeft {
