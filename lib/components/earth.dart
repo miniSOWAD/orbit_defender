@@ -21,7 +21,7 @@ class EarthComponent extends SpriteComponent
 
     add(
       CircleHitbox.relative(
-        0.88,
+        0.86,
         parentSize: size,
         anchor: Anchor.center,
       ),
