@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 enum GameState {
+  splash,
   mainMenu,
   buying,
   playing,
@@ -15,15 +16,18 @@ class GameConfig {
 
   static const int startingGold = 300;
 
+  static const int shipHealCost = 20;
+  static const double shipHealAmount = 10;
+
   static const double earthSize = 140;
-  static const double shipSize = 58;
-  static const double meteorSize = 54;
-  static const double rocketSize = 34;
+  static const double shipSize = 54;
+  static const double meteorSize = 52;
+  static const double rocketSize = 30;
 
   static const double shipOrbitRadius = 145;
   static const double shipRotationSpeed = 2.7;
 
-  static const double rocketSpeed = 560;
+  static const double rocketSpeed = 620;
 
   static const double firstBuyingDuration = 10;
   static const double repeatBuyingDuration = 5;
