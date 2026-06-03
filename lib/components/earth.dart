@@ -1,7 +1,6 @@
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 
-import '../constants.dart';
 import '../orbit_guard_game.dart';
 
 class EarthComponent extends SpriteComponent
@@ -10,18 +9,19 @@ class EarthComponent extends SpriteComponent
 
   EarthComponent()
       : super(
-          size: Vector2.all(GameConfig.earthSize),
           anchor: Anchor.center,
         );
 
   @override
   Future<void> onLoad() async {
     position = gameRef.centerPoint;
+    size = Vector2.all(gameRef.responsiveEarthSize);
+
     await updateEarthSprite(force: true);
 
     add(
       CircleHitbox.relative(
-        0.86,
+        0.84,
         parentSize: size,
         anchor: Anchor.center,
       ),
@@ -31,6 +31,7 @@ class EarthComponent extends SpriteComponent
   @override
   void update(double dt) {
     position = gameRef.centerPoint;
+    size = Vector2.all(gameRef.responsiveEarthSize);
     updateEarthSprite();
     super.update(dt);
   }
