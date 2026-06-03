@@ -18,7 +18,6 @@ class RocketComponent extends SpriteComponent
     required this.startPosition,
     required this.target,
   }) : super(
-          size: Vector2.all(GameConfig.rocketSize),
           anchor: Anchor.center,
         );
 
@@ -26,6 +25,7 @@ class RocketComponent extends SpriteComponent
   Future<void> onLoad() async {
     sprite = await gameRef.loadSprite(config.image);
     position = startPosition;
+    size = Vector2.all(gameRef.responsiveRocketSize);
 
     add(
       CircleHitbox.relative(
@@ -41,6 +41,8 @@ class RocketComponent extends SpriteComponent
     if (gameRef.state != GameState.playing) return;
     if (hasHit) return;
 
+    size = Vector2.all(gameRef.responsiveRocketSize);
+
     final currentTarget = target;
 
     if (currentTarget == null ||
@@ -53,7 +55,7 @@ class RocketComponent extends SpriteComponent
     final toTarget = currentTarget.position - position;
     final distanceThisFrame = GameConfig.rocketSpeed * dt;
 
-    if (toTarget.length <= distanceThisFrame + GameConfig.meteorSize * 0.25) {
+    if (toTarget.length <= distanceThisFrame + gameRef.responsiveMeteorSize * 0.22) {
       _hitTarget(currentTarget);
       return;
     }
