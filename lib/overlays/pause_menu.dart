@@ -12,41 +12,50 @@ class PauseMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.black.withOpacity(0.68),
-      child: Center(
-        child: Container(
-          width: 310,
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: const Color(0xFF101426),
-            borderRadius: BorderRadius.circular(26),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.18),
-            ),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'PAUSED',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 30,
-                  fontWeight: FontWeight.w900,
+    return Positioned.fill(
+      child: Container(
+        color: Colors.black.withOpacity(0.68),
+        child: Center(
+          child: Container(
+            width: 300,
+            padding: const EdgeInsets.all(22),
+            decoration: BoxDecoration(
+              color: const Color(0xFF101426),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: Colors.cyanAccent.withOpacity(0.28),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.cyanAccent.withOpacity(0.15),
+                  blurRadius: 24,
                 ),
-              ),
-              const SizedBox(height: 24),
-              _MenuButton(
-                label: 'RESUME',
-                onTap: game.resumeGame,
-              ),
-              const SizedBox(height: 12),
-              _MenuButton(
-                label: 'GO TO MAIN MENU',
-                onTap: game.goToMainMenu,
-              ),
-            ],
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'PAUSED',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 2,
+                  ),
+                ),
+                const SizedBox(height: 22),
+                _MenuButton(
+                  label: 'RESUME',
+                  onTap: game.resumeGame,
+                ),
+                const SizedBox(height: 10),
+                _MenuButton(
+                  label: 'GO TO MAIN MENU',
+                  onTap: game.goToMainMenu,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -69,12 +78,12 @@ class _MenuButton extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 14),
+        padding: const EdgeInsets.symmetric(vertical: 11),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.13),
-          borderRadius: BorderRadius.circular(16),
+          color: Colors.white.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: Colors.white.withOpacity(0.2),
+            color: Colors.white.withOpacity(0.18),
           ),
         ),
         child: Text(
@@ -83,6 +92,8 @@ class _MenuButton extends StatelessWidget {
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w900,
+            fontSize: 13,
+            letterSpacing: 1,
           ),
         ),
       ),
