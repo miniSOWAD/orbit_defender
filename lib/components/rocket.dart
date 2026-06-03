@@ -3,17 +3,20 @@ import 'package:flame/components.dart';
 
 import '../constants.dart';
 import '../orbit_guard_game.dart';
+import 'meteor.dart';
 
 class RocketComponent extends SpriteComponent
     with HasGameRef<OrbitGuardGame>, CollisionCallbacks {
   final RocketConfig config;
   final Vector2 startPosition;
-  final Vector2 direction;
+  MeteorComponent? target;
+
+  bool hasHit = false;
 
   RocketComponent({
     required this.config,
     required this.startPosition,
-    required this.direction,
+    required this.target,
   }) : super(
           size: Vector2.all(GameConfig.rocketSize),
           anchor: Anchor.center,
@@ -24,11 +27,9 @@ class RocketComponent extends SpriteComponent
     sprite = await gameRef.loadSprite(config.image);
     position = startPosition;
 
-    angle = direction.screenAngle();
-
     add(
       CircleHitbox.relative(
-        0.65,
+        0.75,
         parentSize: size,
         anchor: Anchor.center,
       ),
@@ -38,22 +39,53 @@ class RocketComponent extends SpriteComponent
   @override
   void update(double dt) {
     if (gameRef.state != GameState.playing) return;
+    if (hasHit) return;
 
-    position += direction * GameConfig.rocketSpeed * dt;
+    final currentTarget = target;
 
-    if (_isOutsideScreen()) {
+    if (currentTarget == null ||
+        currentTarget.isRemoved ||
+        currentTarget.isDead) {
       removeFromParent();
+      return;
     }
+
+    final toTarget = currentTarget.position - position;
+    final distanceThisFrame = GameConfig.rocketSpeed * dt;
+
+    if (toTarget.length <= distanceThisFrame + GameConfig.meteorSize * 0.25) {
+      _hitTarget(currentTarget);
+      return;
+    }
+
+    final direction = toTarget.normalized();
+
+    position += direction * distanceThisFrame;
+    angle = direction.screenAngle();
 
     super.update(dt);
   }
 
-  bool _isOutsideScreen() {
-    const margin = 120.0;
+  void _hitTarget(MeteorComponent meteor) {
+    if (hasHit) return;
 
-    return position.x < -margin ||
-        position.y < -margin ||
-        position.x > gameRef.size.x + margin ||
-        position.y > gameRef.size.y + margin;
+    hasHit = true;
+
+    meteor.takeDamage(config.damage);
+    removeFromParent();
+  }
+
+  @override
+  void onCollisionStart(
+    Set<Vector2> intersectionPoints,
+    PositionComponent other,
+  ) {
+    super.onCollisionStart(intersectionPoints, other);
+
+    if (hasHit) return;
+
+    if (other is MeteorComponent) {
+      _hitTarget(other);
+    }
   }
 }
