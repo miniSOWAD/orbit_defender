@@ -19,14 +19,7 @@ class GameConfig {
   static const int shipHealCost = 20;
   static const double shipHealAmount = 10;
 
-  static const double earthSize = 140;
-  static const double shipSize = 54;
-  static const double meteorSize = 52;
-  static const double rocketSize = 30;
-
-  static const double shipOrbitRadius = 145;
   static const double shipRotationSpeed = 2.7;
-
   static const double rocketSpeed = 620;
 
   static const double firstBuyingDuration = 10;
