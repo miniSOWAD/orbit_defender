@@ -1,5 +1,6 @@
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'orbit_guard_game.dart';
@@ -10,7 +11,18 @@ import 'overlays/main_menu.dart';
 import 'overlays/pause_menu.dart';
 import 'overlays/start_screen.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight,
+  ]);
+
+  await SystemChrome.setEnabledSystemUIMode(
+    SystemUiMode.immersiveSticky,
+  );
+
   runApp(const OrbitGuardApp());
 }
 
@@ -26,8 +38,10 @@ class OrbitGuardApp extends StatelessWidget {
       title: 'Orbit Defender',
       theme: ThemeData(
         textTheme: GoogleFonts.orbitronTextTheme(),
+        fontFamily: GoogleFonts.orbitron().fontFamily,
       ),
       home: Scaffold(
+        backgroundColor: Colors.black,
         body: GameWidget<OrbitGuardGame>(
           game: game,
           overlayBuilderMap: {
