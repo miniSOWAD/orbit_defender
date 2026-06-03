@@ -12,13 +12,13 @@ class ShipComponent extends SpriteComponent
 
   ShipComponent()
       : super(
-          size: Vector2.all(GameConfig.shipSize),
           anchor: Anchor.center,
         );
 
   @override
   Future<void> onLoad() async {
     sprite = await gameRef.loadSprite('ship.png');
+    size = Vector2.all(gameRef.responsiveShipSize);
 
     add(
       CircleHitbox.relative(
@@ -31,6 +31,8 @@ class ShipComponent extends SpriteComponent
 
   @override
   void update(double dt) {
+    size = Vector2.all(gameRef.responsiveShipSize);
+
     if (gameRef.state == GameState.playing ||
         gameRef.state == GameState.buying) {
       if (gameRef.rotatingLeft) {
@@ -43,10 +45,11 @@ class ShipComponent extends SpriteComponent
     }
 
     final center = gameRef.centerPoint;
+    final radius = gameRef.responsiveOrbitRadius;
 
     position = Vector2(
-      center.x + cos(orbitAngle) * GameConfig.shipOrbitRadius,
-      center.y + sin(orbitAngle) * GameConfig.shipOrbitRadius,
+      center.x + cos(orbitAngle) * radius,
+      center.y + sin(orbitAngle) * radius,
     );
 
     angle = orbitAngle + pi / 2;
