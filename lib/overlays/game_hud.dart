@@ -16,47 +16,76 @@ class GameHud extends StatelessWidget {
     return SafeArea(
       child: _HudAutoRefresh(
         childBuilder: () {
+          final screen = MediaQuery.of(context).size;
+          final scale = (screen.height / 390).clamp(0.72, 1.0);
+
           return Padding(
-            padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
+            padding: EdgeInsets.fromLTRB(
+              8 * scale,
+              6 * scale,
+              8 * scale,
+              0,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Row(
                   children: [
-                    _StatBox(label: 'Earth', value: '${game.earthHp.toInt()}/200'),
-                    const SizedBox(width: 6),
-                    _StatBox(label: 'Ship', value: '${game.shipHp.toInt()}/100'),
-                    const SizedBox(width: 6),
-                    _StatBox(label: 'Gold', value: '${game.gold}'),
-                    const SizedBox(width: 6),
-                    _StatBox(label: 'Score', value: '${game.score}'),
+                    _StatBox(
+                      scale: scale,
+                      label: 'Earth',
+                      value: '${game.earthHp.toInt()}/200',
+                    ),
+                    SizedBox(width: 5 * scale),
+                    _StatBox(
+                      scale: scale,
+                      label: 'Ship',
+                      value: '${game.shipHp.toInt()}/100',
+                    ),
+                    SizedBox(width: 5 * scale),
+                    _StatBox(
+                      scale: scale,
+                      label: 'Gold',
+                      value: '${game.gold}',
+                    ),
+                    SizedBox(width: 5 * scale),
+                    _StatBox(
+                      scale: scale,
+                      label: 'Score',
+                      value: '${game.score}',
+                    ),
                     const Spacer(),
-                    _PauseButton(game: game),
+                    _PauseButton(
+                      scale: scale,
+                      game: game,
+                    ),
                   ],
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: 4 * scale),
                 _MiniHealthBar(
+                  scale: scale,
                   label: 'Earth',
                   value: game.earthHp / GameConfig.earthMaxHp,
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 3 * scale),
                 _MiniHealthBar(
+                  scale: scale,
                   label: 'Ship',
                   value: game.shipHp / GameConfig.shipMaxHp,
                 ),
-                const SizedBox(height: 5),
-                _ModeText(game: game),
+                SizedBox(height: 3 * scale),
+                _ModeText(
+                  scale: scale,
+                  game: game,
+                ),
                 if (game.earthDyingWarning)
-                  const Padding(
-                    padding: EdgeInsets.only(top: 4),
-                    child: Text(
-                      'WARNING: EARTH DYING!',
-                      style: TextStyle(
-                        color: Colors.redAccent,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 15,
-                        letterSpacing: 1,
-                      ),
+                  Text(
+                    'EARTH DYING!',
+                    style: TextStyle(
+                      color: Colors.redAccent,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 10 * scale,
+                      letterSpacing: 1,
                     ),
                   ),
               ],
@@ -101,9 +130,11 @@ class _HudAutoRefreshState extends State<_HudAutoRefresh> {
 
 class _PauseButton extends StatelessWidget {
   final OrbitGuardGame game;
+  final double scale;
 
   const _PauseButton({
     required this.game,
+    required this.scale,
   });
 
   @override
@@ -111,19 +142,19 @@ class _PauseButton extends StatelessWidget {
     return GestureDetector(
       onTap: game.pauseGame,
       child: Container(
-        width: 48,
-        height: 48,
+        width: 42 * scale,
+        height: 42 * scale,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.16),
-          borderRadius: BorderRadius.circular(14),
+          color: Colors.white.withOpacity(0.14),
+          borderRadius: BorderRadius.circular(12 * scale),
           border: Border.all(
-            color: Colors.white.withOpacity(0.3),
+            color: Colors.white.withOpacity(0.25),
           ),
         ),
-        child: const Icon(
+        child: Icon(
           Icons.pause,
           color: Colors.white,
-          size: 26,
+          size: 23 * scale,
         ),
       ),
     );
@@ -133,20 +164,22 @@ class _PauseButton extends StatelessWidget {
 class _StatBox extends StatelessWidget {
   final String label;
   final String value;
+  final double scale;
 
   const _StatBox({
     required this.label,
     required this.value,
+    required this.scale,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 64,
-      padding: const EdgeInsets.symmetric(vertical: 7),
+      width: 58 * scale,
+      padding: EdgeInsets.symmetric(vertical: 5 * scale),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.38),
-        borderRadius: BorderRadius.circular(13),
+        color: Colors.black.withOpacity(0.35),
+        borderRadius: BorderRadius.circular(10 * scale),
         border: Border.all(
           color: Colors.white.withOpacity(0.16),
         ),
@@ -155,17 +188,17 @@ class _StatBox extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white70,
-              fontSize: 10,
+              fontSize: 8 * scale,
             ),
           ),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w900,
-              fontSize: 12,
+              fontSize: 9.5 * scale,
             ),
           ),
         ],
@@ -177,10 +210,12 @@ class _StatBox extends StatelessWidget {
 class _MiniHealthBar extends StatelessWidget {
   final String label;
   final double value;
+  final double scale;
 
   const _MiniHealthBar({
     required this.label,
     required this.value,
+    required this.scale,
   });
 
   @override
@@ -190,12 +225,12 @@ class _MiniHealthBar extends StatelessWidget {
     return Row(
       children: [
         SizedBox(
-          width: 42,
+          width: 34 * scale,
           child: Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white70,
-              fontSize: 10,
+              fontSize: 8.5 * scale,
             ),
           ),
         ),
@@ -204,7 +239,7 @@ class _MiniHealthBar extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             child: LinearProgressIndicator(
               value: clamped,
-              minHeight: 7,
+              minHeight: 5 * scale,
               backgroundColor: Colors.white.withOpacity(0.13),
               valueColor: AlwaysStoppedAnimation<Color>(
                 clamped > 0.35
@@ -221,9 +256,11 @@ class _MiniHealthBar extends StatelessWidget {
 
 class _ModeText extends StatelessWidget {
   final OrbitGuardGame game;
+  final double scale;
 
   const _ModeText({
     required this.game,
+    required this.scale,
   });
 
   @override
@@ -231,20 +268,20 @@ class _ModeText extends StatelessWidget {
     String text;
 
     if (game.state == GameState.buying) {
-      text = 'BUYING PHASE: ${game.buyingTimeLeft.ceil()}s LEFT';
+      text = 'SHOP: ${game.buyingTimeLeft.ceil()}s';
     } else if (game.state == GameState.earthDestroyed) {
-      text = 'EARTH DESTROYED...';
+      text = 'EARTH DESTROYED';
     } else {
-      text = 'NEXT REWARD IN ${game.nextRewardTimeLeft.ceil()}s';
+      text = 'REWARD IN ${game.nextRewardTimeLeft.ceil()}s';
     }
 
     return Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         color: Colors.white70,
         fontWeight: FontWeight.w800,
-        fontSize: 11,
-        letterSpacing: 0.6,
+        fontSize: 9 * scale,
+        letterSpacing: 0.5,
       ),
     );
   }
