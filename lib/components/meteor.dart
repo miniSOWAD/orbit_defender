@@ -3,7 +3,6 @@ import 'package:flame/components.dart';
 
 import '../constants.dart';
 import '../orbit_guard_game.dart';
-import 'rocket.dart';
 
 class MeteorComponent extends SpriteComponent
     with HasGameRef<OrbitGuardGame>, CollisionCallbacks {
@@ -11,7 +10,9 @@ class MeteorComponent extends SpriteComponent
   final Vector2 startPosition;
 
   late double hp;
+
   bool hasHitSomething = false;
+  bool isDead = false;
 
   MeteorComponent({
     required this.config,
@@ -39,11 +40,12 @@ class MeteorComponent extends SpriteComponent
   @override
   void update(double dt) {
     if (gameRef.state != GameState.playing) return;
+    if (isDead || hasHitSomething) return;
 
     _checkSurfaceHitWithEarth();
     _checkHitWithShip();
 
-    if (hasHitSomething) return;
+    if (isDead || hasHitSomething) return;
 
     final direction = (gameRef.centerPoint - position).normalized();
     position += direction * config.speed * dt;
@@ -82,24 +84,20 @@ class MeteorComponent extends SpriteComponent
   }
 
   void takeDamage(double damage) {
+    if (isDead || hasHitSomething) return;
+
     hp -= damage;
 
     if (hp <= 0) {
-      gameRef.addScore(config.hp.toInt());
-      removeFromParent();
+      destroyMeteor();
     }
   }
 
-  @override
-  void onCollisionStart(
-    Set<Vector2> intersectionPoints,
-    PositionComponent other,
-  ) {
-    super.onCollisionStart(intersectionPoints, other);
+  void destroyMeteor() {
+    if (isDead) return;
 
-    if (other is RocketComponent) {
-      takeDamage(other.config.damage);
-      other.removeFromParent();
-    }
+    isDead = true;
+    gameRef.addScore(config.hp.toInt());
+    removeFromParent();
   }
 }
