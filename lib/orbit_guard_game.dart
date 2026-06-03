@@ -15,7 +15,7 @@ class OrbitGuardGame extends FlameGame with HasCollisionDetection {
   late EarthComponent earth;
   late ShipComponent ship;
 
-  GameState state = GameState.mainMenu;
+  GameState state = GameState.splash;
   GameState _stateBeforePause = GameState.playing;
 
   double earthHp = GameConfig.earthMaxHp;
@@ -23,6 +23,8 @@ class OrbitGuardGame extends FlameGame with HasCollisionDetection {
 
   int gold = 0;
   int score = 0;
+  int lastScore = 0;
+  double lastSurvivedSeconds = 0;
 
   int selectedRocketIndex = 0;
   final List<int> rocketInventory = [0, 0, 0, 0];
@@ -80,7 +82,8 @@ class OrbitGuardGame extends FlameGame with HasCollisionDetection {
 
   @override
   void update(double dt) {
-    if (state == GameState.mainMenu ||
+    if (state == GameState.splash ||
+        state == GameState.mainMenu ||
         state == GameState.paused ||
         state == GameState.gameOver) {
       super.update(dt);
@@ -89,6 +92,7 @@ class OrbitGuardGame extends FlameGame with HasCollisionDetection {
 
     if (state == GameState.earthDestroyed) {
       super.update(dt);
+
       _earthDeathTimer += dt;
 
       if (_earthDeathTimer >= GameConfig.earthDeathDelay) {
@@ -257,20 +261,37 @@ class OrbitGuardGame extends FlameGame with HasCollisionDetection {
     return true;
   }
 
+  bool buyShipHp() {
+    if (!isBuyingPhase) return false;
+    if (shipHp >= GameConfig.shipMaxHp) return false;
+    if (gold < GameConfig.shipHealCost) return false;
+
+    gold -= GameConfig.shipHealCost;
+    shipHp += GameConfig.shipHealAmount;
+
+    if (shipHp > GameConfig.shipMaxHp) {
+      shipHp = GameConfig.shipMaxHp;
+    }
+
+    return true;
+  }
+
   void fireRocket() {
     if (state != GameState.playing) return;
 
     if (rocketInventory[selectedRocketIndex] <= 0) return;
 
+    final target = findClosestMeteorInFront();
+
+    if (target == null) {
+      return;
+    }
+
     final rocketConfig = GameData.rockets[selectedRocketIndex];
 
     rocketInventory[selectedRocketIndex]--;
 
-    final target = findClosestMeteor();
-
-    final direction = target == null
-        ? (ship.position - centerPoint).normalized()
-        : (target.position - ship.position).normalized();
+    final direction = (target.position - ship.position).normalized();
 
     add(
       RocketComponent(
@@ -281,18 +302,30 @@ class OrbitGuardGame extends FlameGame with HasCollisionDetection {
     );
   }
 
-  MeteorComponent? findClosestMeteor() {
+  MeteorComponent? findClosestMeteorInFront() {
     final meteors = children.whereType<MeteorComponent>().toList();
 
     if (meteors.isEmpty) return null;
 
-    meteors.sort((a, b) {
+    final shipForward = (ship.position - centerPoint).normalized();
+
+    final visibleMeteors = meteors.where((meteor) {
+      final toMeteor = (meteor.position - ship.position).normalized();
+
+      final dot = shipForward.dot(toMeteor);
+
+      return dot >= 0;
+    }).toList();
+
+    if (visibleMeteors.isEmpty) return null;
+
+    visibleMeteors.sort((a, b) {
       final da = a.position.distanceTo(ship.position);
       final db = b.position.distanceTo(ship.position);
       return da.compareTo(db);
     });
 
-    return meteors.first;
+    return visibleMeteors.first;
   }
 
   void pauseGame() {
@@ -322,7 +355,9 @@ class OrbitGuardGame extends FlameGame with HasCollisionDetection {
   }
 
   void goToMainMenu() {
-    _stateBeforePause = state;
+    if (state != GameState.gameOver) {
+      _stateBeforePause = state;
+    }
 
     state = GameState.mainMenu;
 
@@ -386,6 +421,9 @@ class OrbitGuardGame extends FlameGame with HasCollisionDetection {
   }
 
   void _showGameOver() {
+    lastScore = score;
+    lastSurvivedSeconds = survivedSeconds;
+
     state = GameState.gameOver;
     hasActiveRun = false;
 
@@ -396,6 +434,10 @@ class OrbitGuardGame extends FlameGame with HasCollisionDetection {
 
     overlays.remove('Controls');
     overlays.add('GameOverMenu');
+  }
+
+  void finishGameOverAndReturnToMenu() {
+    goToMainMenu();
   }
 
   void addScore(int amount) {
