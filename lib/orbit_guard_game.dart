@@ -277,30 +277,28 @@ class OrbitGuardGame extends FlameGame with HasCollisionDetection {
   }
 
   void fireRocket() {
-    if (state != GameState.playing) return;
+  if (state != GameState.playing) return;
 
-    if (rocketInventory[selectedRocketIndex] <= 0) return;
+  if (rocketInventory[selectedRocketIndex] <= 0) return;
 
-    final target = findClosestMeteorInFront();
+  final target = findClosestMeteorInFront();
 
-    if (target == null) {
-      return;
-    }
-
-    final rocketConfig = GameData.rockets[selectedRocketIndex];
-
-    rocketInventory[selectedRocketIndex]--;
-
-    final direction = (target.position - ship.position).normalized();
-
-    add(
-      RocketComponent(
-        config: rocketConfig,
-        startPosition: ship.position.clone(),
-        direction: direction,
-      ),
-    );
+  if (target == null) {
+    return;
   }
+
+  final rocketConfig = GameData.rockets[selectedRocketIndex];
+
+  rocketInventory[selectedRocketIndex]--;
+
+  add(
+    RocketComponent(
+      config: rocketConfig,
+      startPosition: ship.position.clone(),
+      target: target,
+    ),
+  );
+}
 
   MeteorComponent? findClosestMeteorInFront() {
     final meteors = children.whereType<MeteorComponent>().toList();
