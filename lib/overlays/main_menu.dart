@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../orbit_guard_game.dart';
 
@@ -89,7 +90,7 @@ class MainMenu extends StatelessWidget {
                   const SizedBox(height: 10),
                   _MenuButton(
                     label: 'EXIT',
-                    onTap: () => _showExitMessage(context),
+                    onTap: _exitGame,
                   ),
                 ],
               ),
@@ -156,12 +157,8 @@ class MainMenu extends StatelessWidget {
     );
   }
 
-  void _showExitMessage(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Close the browser tab or app window to exit.'),
-      ),
-    );
+  void _exitGame() {
+    SystemNavigator.pop();
   }
 }
 
