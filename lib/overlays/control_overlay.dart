@@ -22,7 +22,12 @@ class ControlOverlay extends StatelessWidget {
 
             return Stack(
               children: [
-                if (game.isBuyingPhase)
+                if (game.showRewardAlert)
+                  Center(
+                    child: _RewardCenterAlert(scale: scale),
+                  ),
+
+                if (game.isBuyingPhase && !game.showRewardAlert)
                   Positioned(
                     top: 74 * scale,
                     left: 170 * scale,
@@ -84,6 +89,77 @@ class ControlOverlay extends StatelessWidget {
   }
 }
 
+class _RewardCenterAlert extends StatelessWidget {
+  final double scale;
+
+  const _RewardCenterAlert({
+    required this.scale,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 310 * scale,
+      padding: EdgeInsets.symmetric(
+        horizontal: 18 * scale,
+        vertical: 18 * scale,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.82),
+        borderRadius: BorderRadius.circular(22 * scale),
+        border: Border.all(
+          color: Colors.cyanAccent.withOpacity(0.8),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.cyanAccent.withOpacity(0.35),
+            blurRadius: 28 * scale,
+            spreadRadius: 3 * scale,
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '+300 GOLD',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.amberAccent,
+              fontWeight: FontWeight.w900,
+              fontSize: 25 * scale,
+              letterSpacing: 1.5,
+            ),
+          ),
+          SizedBox(height: 8 * scale),
+          Text(
+            'BUY ROCKETS NOW',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.cyanAccent,
+              fontWeight: FontWeight.w900,
+              fontSize: 18 * scale,
+              letterSpacing: 1.2,
+            ),
+          ),
+          SizedBox(height: 6 * scale),
+          Text(
+            'SHOP OPEN FOR 12 SECONDS',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white70,
+              fontWeight: FontWeight.w700,
+              fontSize: 10 * scale,
+              letterSpacing: 0.8,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ControlAutoRefresh extends StatefulWidget {
   final Widget Function() childBuilder;
 
@@ -104,7 +180,7 @@ class _ControlAutoRefreshState extends State<_ControlAutoRefresh> {
 
   Future<void> _refresh() async {
     while (mounted) {
-      await Future.delayed(const Duration(milliseconds: 120));
+      await Future.delayed(const Duration(milliseconds: 100));
       if (mounted) setState(() {});
     }
   }
@@ -299,7 +375,7 @@ class _RocketSelector extends StatelessWidget {
           },
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 140),
-            width: 52 * scale,
+            width: 56 * scale,
             margin: EdgeInsets.only(left: 5 * scale),
             padding: EdgeInsets.symmetric(
               horizontal: 4 * scale,
@@ -342,7 +418,7 @@ class _RocketSelector extends StatelessWidget {
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w900,
-                    fontSize: 7.2 * scale,
+                    fontSize: 7.1 * scale,
                   ),
                 ),
                 SizedBox(height: 1 * scale),
@@ -364,9 +440,23 @@ class _RocketSelector extends StatelessWidget {
                             ? Colors.lightGreenAccent
                             : Colors.white38,
                     fontWeight: FontWeight.w900,
-                    fontSize: 8.5 * scale,
+                    fontSize: 8.3 * scale,
                   ),
                 ),
+
+                // This is the new owned amount while buying.
+                if (isBuying)
+                  Text(
+                    'OWNED x$owned',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: owned > 0
+                          ? Colors.lightGreenAccent
+                          : Colors.white38,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 6.7 * scale,
+                    ),
+                  ),
               ],
             ),
           ),
