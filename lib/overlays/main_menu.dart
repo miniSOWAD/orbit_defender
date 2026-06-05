@@ -102,86 +102,107 @@ class MainMenu extends StatelessWidget {
     );
   }
 
-  void _showStartGameDialog(BuildContext context) {
+void _showStartGameDialog(BuildContext context) {
+    final screen = MediaQuery.of(context).size;
+    final dialogWidth = (screen.width * 0.48).clamp(320.0, 430.0);
+    final dialogMaxHeight = screen.height * 0.82;
+
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (_) {
         return Dialog(
           backgroundColor: Colors.transparent,
-          child: Container(
-            width: 360,
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: const Color(0xFF090D1A).withOpacity(0.96),
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(
-                color: Colors.cyanAccent.withOpacity(0.45),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.cyanAccent.withOpacity(0.18),
-                  blurRadius: 24,
-                ),
-              ],
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 18,
+            vertical: 12,
+          ),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: dialogWidth,
+              maxHeight: dialogMaxHeight,
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'HOW TO PLAY',
-                  style: TextStyle(
-                    color: Colors.cyanAccent,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 18,
-                    letterSpacing: 1.5,
-                  ),
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFF090D1A).withOpacity(0.96),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Colors.cyanAccent.withOpacity(0.45),
                 ),
-                const SizedBox(height: 12),
-                const Text(
-                  'You get 20 seconds to buy rockets now.\n\n'
-                  'After surviving 45 seconds, you will again be rewarded with more gold and get 12 seconds to buy new rockets.\n\n'
-                  'There are 4 types of missiles, from cheaper low-damage missiles to expensive high-damage missiles.\n\n'
-                  'There are also 4 different sizes of meteors coming toward your planet.\n\n'
-                  'Use your economy wisely. Do not waste a powerful costly rocket on a small meteor, and do not rely only on cheap rockets or you may go short on damage, which leads to ultimate death.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 11.5,
-                    height: 1.35,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.cyanAccent.withOpacity(0.18),
+                    blurRadius: 24,
                   ),
-                ),
-                const SizedBox(height: 16),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                    game.startNewGame();
-                  },
-                  child: Container(
-                    width: 160,
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [
-                          Color(0xFF00E5FF),
-                          Color(0xFF00FFA3),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(14),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'HOW TO PLAY',
+                    style: TextStyle(
+                      color: Colors.cyanAccent,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 16,
+                      letterSpacing: 1.5,
                     ),
-                    child: const Text(
-                      'OK, PLAY',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 12,
-                        letterSpacing: 1,
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Text(
+                        'You get 20 seconds to buy rockets now.\n\n'
+                        'After surviving 45 seconds, you will again be rewarded with more gold and get 12 seconds to buy new rockets.\n\n'
+                        'There are 4 types of missiles, from cheaper low-damage missiles to expensive high-damage missiles.\n\n'
+                        'There are also 4 different sizes of meteors coming toward your planet.\n\n'
+                        'Use your economy wisely. Do not waste a powerful costly rocket on a small meteor, and do not rely only on cheap rockets or you may go short on damage, which leads to ultimate death.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: screen.height < 360 ? 9.5 : 10.5,
+                          height: 1.28,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+
+                  const SizedBox(height: 10),
+
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                      game.startNewGame();
+                    },
+                    child: Container(
+                      width: 145,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFF00E5FF),
+                            Color(0xFF00FFA3),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(13),
+                      ),
+                      child: const Text(
+                        'OK, PLAY',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 11,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );
