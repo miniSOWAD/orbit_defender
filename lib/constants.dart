@@ -14,21 +14,21 @@ class GameConfig {
   static const double earthMaxHp = 200;
   static const double shipMaxHp = 100;
 
-  static const int startingGold = 300;
+  static const int startingGold = 450;
 
   static const int shipHealCost = 20;
   static const double shipHealAmount = 10;
 
   static const double shipRotationSpeed = 2.7;
-  static const double rocketSpeed = 620;
+  static const double rocketSpeed = 470;
 
-  static const double firstBuyingDuration = 10;
-  static const double repeatBuyingDuration = 5;
+  static const double firstBuyingDuration = 20;
+  static const double repeatBuyingDuration = 12;
 
-  static const double survivalRewardInterval = 30;
-  static const int survivalRewardGold = 300;
+  static const double survivalRewardInterval = 40;
+  static const int survivalRewardGold = 400;
 
-  static const double earthDeathDelay = 2;
+  static const double earthDeathDelay = 3;
 
   static const Color spaceBackgroundColor = Color(0xFF050712);
 }
