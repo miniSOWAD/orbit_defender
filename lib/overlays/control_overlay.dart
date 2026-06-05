@@ -24,9 +24,9 @@ class ControlOverlay extends StatelessWidget {
               children: [
                 if (game.isBuyingPhase)
                   Positioned(
-                    top: 76 * scale,
-                    left: 160 * scale,
-                    right: 160 * scale,
+                    top: 74 * scale,
+                    left: 170 * scale,
+                    right: 170 * scale,
                     child: _BuyingBanner(
                       scale: scale,
                       game: game,
@@ -72,11 +72,6 @@ class ControlOverlay extends StatelessWidget {
                           game: game,
                         ),
                       ],
-                      SizedBox(height: 8 * scale),
-                      _FireButton(
-                        scale: scale,
-                        game: game,
-                      ),
                     ],
                   ),
                 ),
@@ -131,36 +126,49 @@ class _BuyingBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final title = game.isFirstBuyingPhase ? 'ROCKET SHOP OPEN' : 'BUY ROCKETS NOW';
+
+    final subtitle = game.isFirstBuyingPhase
+        ? '${game.buyingTimeLeft.ceil()}s to prepare'
+        : '+300 GOLD | ${game.buyingTimeLeft.ceil()}s left';
+
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: 10 * scale,
-        vertical: 6 * scale,
+        horizontal: 12 * scale,
+        vertical: 7 * scale,
       ),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.6),
+        color: Colors.black.withOpacity(0.68),
         borderRadius: BorderRadius.circular(12 * scale),
         border: Border.all(
-          color: Colors.cyanAccent.withOpacity(0.42),
+          color: Colors.cyanAccent.withOpacity(0.55),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.cyanAccent.withOpacity(0.16),
+            blurRadius: 18 * scale,
+          ),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            game.isFirstBuyingPhase ? 'SHOP OPEN' : '+300 GOLD',
+            title,
             style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w900,
-              fontSize: 10 * scale,
+              fontSize: 10.5 * scale,
               letterSpacing: 1,
             ),
           ),
+          SizedBox(height: 2 * scale),
           Text(
-            '${game.buyingTimeLeft.ceil()}s LEFT',
+            subtitle,
             style: TextStyle(
               color: Colors.cyanAccent,
               fontWeight: FontWeight.w900,
-              fontSize: 10 * scale,
+              fontSize: 9.5 * scale,
             ),
           ),
         ],
@@ -209,59 +217,6 @@ class _RotateButton extends StatelessWidget {
   }
 }
 
-class _FireButton extends StatelessWidget {
-  final OrbitGuardGame game;
-  final double scale;
-
-  const _FireButton({
-    required this.game,
-    required this.scale,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final canFire = game.state == GameState.playing &&
-        game.rocketInventory[game.selectedRocketIndex] > 0;
-
-    return GestureDetector(
-      onTap: game.fireRocket,
-      child: Container(
-        width: 62 * scale,
-        height: 62 * scale,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: LinearGradient(
-            colors: canFire
-                ? const [
-                    Colors.redAccent,
-                    Colors.deepOrange,
-                  ]
-                : [
-                    Colors.grey.shade700,
-                    Colors.grey.shade800,
-                  ],
-          ),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.3),
-            width: 1.4,
-          ),
-        ),
-        child: Center(
-          child: Text(
-            game.isBuyingPhase ? 'SHOP' : 'FIRE',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w900,
-              fontSize: 11 * scale,
-              letterSpacing: 0.8,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _HealButton extends StatelessWidget {
   final OrbitGuardGame game;
   final double scale;
@@ -299,7 +254,7 @@ class _HealButton extends StatelessWidget {
           '+10 SHIP HP  |  20G',
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: Colors.greenAccent,
+            color: canBuy ? Colors.greenAccent : Colors.white38,
             fontWeight: FontWeight.w900,
             fontSize: 9 * scale,
             letterSpacing: 0.7,
@@ -326,68 +281,90 @@ class _RocketSelector extends StatelessWidget {
         final rocket = GameData.rockets[index];
         final selected = game.selectedRocketIndex == index;
         final owned = game.rocketInventory[index];
+
+        final isBuying = game.isBuyingPhase;
         final canBuy = game.gold >= rocket.cost;
+        final canFire = game.state == GameState.playing && owned > 0;
 
         return GestureDetector(
           onTap: () {
-            if (game.isBuyingPhase) {
+            if (isBuying) {
               game.buyRocket(index);
             } else {
-              game.selectRocket(index);
+              game.fireRocketOfType(index);
             }
           },
           onLongPress: () {
             game.selectRocket(index);
           },
-          child: Container(
-            width: 50 * scale,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 140),
+            width: 52 * scale,
             margin: EdgeInsets.only(left: 5 * scale),
             padding: EdgeInsets.symmetric(
               horizontal: 4 * scale,
               vertical: 5 * scale,
             ),
             decoration: BoxDecoration(
-              color: selected
-                  ? Colors.cyanAccent.withOpacity(0.24)
-                  : Colors.black.withOpacity(0.34),
+              color: _cardColor(
+                isBuying: isBuying,
+                selected: selected,
+                canBuy: canBuy,
+                canFire: canFire,
+              ),
               borderRadius: BorderRadius.circular(10 * scale),
               border: Border.all(
-                color: selected
-                    ? Colors.cyanAccent
-                    : Colors.white.withOpacity(0.18),
+                color: _borderColor(
+                  isBuying: isBuying,
+                  selected: selected,
+                  canBuy: canBuy,
+                  canFire: canFire,
+                ),
               ),
+              boxShadow: [
+                if (!isBuying && canFire)
+                  BoxShadow(
+                    color: Colors.redAccent.withOpacity(0.18),
+                    blurRadius: 12 * scale,
+                  ),
+                if (isBuying && selected)
+                  BoxShadow(
+                    color: Colors.cyanAccent.withOpacity(0.18),
+                    blurRadius: 12 * scale,
+                  ),
+              ],
             ),
             child: Column(
               children: [
                 Text(
-                  'R${index + 1}',
+                  isBuying ? 'BUY R${index + 1}' : 'FIRE R${index + 1}',
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w900,
-                    fontSize: 9.5 * scale,
+                    fontSize: 7.2 * scale,
                   ),
                 ),
+                SizedBox(height: 1 * scale),
                 Text(
-                  '${rocket.damage.toInt()}',
+                  '${rocket.damage.toInt()} DMG',
                   style: TextStyle(
                     color: Colors.white70,
-                    fontSize: 7.5 * scale,
+                    fontSize: 6.7 * scale,
                   ),
                 ),
                 Text(
-                  '${rocket.cost}G',
+                  isBuying ? '${rocket.cost}G' : 'x$owned',
                   style: TextStyle(
-                    color: canBuy ? Colors.amberAccent : Colors.redAccent,
+                    color: isBuying
+                        ? canBuy
+                            ? Colors.amberAccent
+                            : Colors.redAccent
+                        : canFire
+                            ? Colors.lightGreenAccent
+                            : Colors.white38,
                     fontWeight: FontWeight.w900,
                     fontSize: 8.5 * scale,
-                  ),
-                ),
-                Text(
-                  'x$owned',
-                  style: TextStyle(
-                    color: Colors.lightGreenAccent,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 9 * scale,
                   ),
                 ),
               ],
@@ -396,5 +373,40 @@ class _RocketSelector extends StatelessWidget {
         );
       }),
     );
+  }
+
+  Color _cardColor({
+    required bool isBuying,
+    required bool selected,
+    required bool canBuy,
+    required bool canFire,
+  }) {
+    if (isBuying) {
+      if (selected) return Colors.cyanAccent.withOpacity(0.24);
+      return Colors.black.withOpacity(0.34);
+    }
+
+    if (canFire) {
+      return Colors.redAccent.withOpacity(0.35);
+    }
+
+    return Colors.black.withOpacity(0.36);
+  }
+
+  Color _borderColor({
+    required bool isBuying,
+    required bool selected,
+    required bool canBuy,
+    required bool canFire,
+  }) {
+    if (isBuying) {
+      if (selected) return Colors.cyanAccent;
+      if (canBuy) return Colors.white.withOpacity(0.22);
+      return Colors.redAccent.withOpacity(0.35);
+    }
+
+    if (canFire) return Colors.redAccent.withOpacity(0.75);
+
+    return Colors.white.withOpacity(0.14);
   }
 }
