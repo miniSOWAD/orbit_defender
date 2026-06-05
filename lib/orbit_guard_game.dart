@@ -269,6 +269,13 @@ class OrbitGuardGame extends FlameGame with HasCollisionDetection {
     selectedRocketIndex = index;
   }
 
+  void fireRocketOfType(int index) {
+    if (state != GameState.playing) return;
+
+    selectedRocketIndex = index;
+    fireRocket();
+  }
+
   bool buyRocket(int index) {
     if (!isBuyingPhase) return false;
 
