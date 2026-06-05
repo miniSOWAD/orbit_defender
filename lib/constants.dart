@@ -72,7 +72,7 @@ class GameData {
       hp: 10,
       earthDamage: 5,
       spawnInterval: 3,
-      speed: 85,
+      speed: 72,
       typeIndex: 0,
     ),
     MeteorConfig(
@@ -80,7 +80,7 @@ class GameData {
       hp: 25,
       earthDamage: 12,
       spawnInterval: 5,
-      speed: 72,
+      speed: 60,
       typeIndex: 1,
     ),
     MeteorConfig(
@@ -88,7 +88,7 @@ class GameData {
       hp: 60,
       earthDamage: 28,
       spawnInterval: 10,
-      speed: 58,
+      speed: 45,
       typeIndex: 2,
     ),
     MeteorConfig(
@@ -96,7 +96,7 @@ class GameData {
       hp: 150,
       earthDamage: 70,
       spawnInterval: 25,
-      speed: 42,
+      speed: 30,
       typeIndex: 3,
     ),
   ];
