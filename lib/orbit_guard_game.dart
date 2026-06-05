@@ -17,6 +17,7 @@ class OrbitGuardGame extends FlameGame with HasCollisionDetection {
 
   GameState state = GameState.splash;
   GameState _stateBeforePause = GameState.playing;
+  GameState _stateBeforeMainMenu = GameState.playing;
 
   double earthHp = GameConfig.earthMaxHp;
   double shipHp = GameConfig.shipMaxHp;
@@ -198,10 +199,23 @@ class OrbitGuardGame extends FlameGame with HasCollisionDetection {
     if (!hasActiveRun) return;
 
     overlays.remove('MainMenu');
-    overlays.add('GameHud');
-    overlays.add('Controls');
+    overlays.remove('PauseMenu');
+    overlays.remove('GameOverMenu');
 
-    state = _stateBeforePause;
+    if (!overlays.isActive('GameHud')) {
+      overlays.add('GameHud');
+    }
+
+    if (!overlays.isActive('Controls')) {
+      overlays.add('Controls');
+    }
+
+    state = _stateBeforeMainMenu;
+
+    if (state != GameState.playing && state != GameState.buying) {
+      state = GameState.playing;
+    }
+
     resumeEngine();
   }
 
@@ -397,8 +411,12 @@ class OrbitGuardGame extends FlameGame with HasCollisionDetection {
   }
 
   void goToMainMenu() {
-    if (state != GameState.gameOver) {
-      _stateBeforePause = state;
+    if (state == GameState.playing || state == GameState.buying) {
+      _stateBeforeMainMenu = state;
+    }
+
+    if (state == GameState.paused) {
+      _stateBeforeMainMenu = _stateBeforePause;
     }
 
     state = GameState.mainMenu;
@@ -412,7 +430,10 @@ class OrbitGuardGame extends FlameGame with HasCollisionDetection {
     overlays.remove('Controls');
     overlays.remove('PauseMenu');
     overlays.remove('GameOverMenu');
-    overlays.add('MainMenu');
+
+    if (!overlays.isActive('MainMenu')) {
+      overlays.add('MainMenu');
+    }
   }
 
   void damageEarth(double damage) {
