@@ -105,25 +105,25 @@ class GameData {
     RocketConfig(
       image: 'rok1.png',
       damage: 5,
-      cost: 4,
+      cost: 5,
       typeIndex: 0,
     ),
     RocketConfig(
       image: 'rok2.png',
       damage: 15,
-      cost: 13,
+      cost: 14,
       typeIndex: 1,
     ),
     RocketConfig(
       image: 'rok3.png',
       damage: 30,
-      cost: 28,
+      cost: 27,
       typeIndex: 2,
     ),
     RocketConfig(
       image: 'rok4.png',
       damage: 60,
-      cost: 60,
+      cost: 53,
       typeIndex: 3,
     ),
   ];
