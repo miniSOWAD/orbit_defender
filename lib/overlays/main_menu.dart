@@ -27,8 +27,8 @@ class MainMenu extends StatelessWidget {
           ),
           Center(
             child: Container(
-              width: 320,
-              padding: const EdgeInsets.all(22),
+              width: 285,
+              padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.52),
                 borderRadius: BorderRadius.circular(24),
@@ -63,31 +63,31 @@ class MainMenu extends StatelessWidget {
                       fontSize: 12,
                     ),
                   ),
-                  const SizedBox(height: 22),
+                  const SizedBox(height: 18),
 
                   if (game.hasActiveRun) ...[
                     _MenuButton(
                       label: 'RESUME',
                       onTap: game.resumeExistingRun,
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
                   ],
 
                   _MenuButton(
                     label: 'NEW GAME',
                     onTap: game.startNewGame,
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   _MenuButton(
                     label: 'HELP',
                     onTap: () => _showHelp(context),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   _MenuButton(
                     label: 'SCORE BOARD',
                     onTap: () => _showScoreBoard(context, game),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   _MenuButton(
                     label: 'EXIT',
                     onTap: _exitGame,
@@ -176,8 +176,8 @@ class _MenuButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 11),
+        width: 220,
+        padding: const EdgeInsets.symmetric(vertical: 9),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             colors: [
@@ -185,11 +185,11 @@ class _MenuButton extends StatelessWidget {
               Color(0xFF00FFA3),
             ],
           ),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.cyanAccent.withOpacity(0.22),
-              blurRadius: 16,
+              color: Colors.cyanAccent.withOpacity(0.18),
+              blurRadius: 12,
             ),
           ],
         ),
@@ -199,7 +199,7 @@ class _MenuButton extends StatelessWidget {
           style: const TextStyle(
             color: Colors.black,
             fontWeight: FontWeight.w900,
-            fontSize: 13,
+            fontSize: 11.5,
             letterSpacing: 1,
           ),
         ),
