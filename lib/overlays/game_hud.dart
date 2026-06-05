@@ -17,7 +17,7 @@ class GameHud extends StatelessWidget {
       child: _HudAutoRefresh(
         childBuilder: () {
           final screen = MediaQuery.of(context).size;
-          final scale = (screen.height / 390).clamp(0.72, 1.0);
+          final scale = (screen.height / 390).clamp(0.68, 1.0);
 
           return Padding(
             padding: EdgeInsets.fromLTRB(
@@ -30,62 +30,86 @@ class GameHud extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _StatBox(
-                      scale: scale,
-                      label: 'Earth',
-                      value: '${game.earthHp.toInt()}/200',
+                    Row(
+                      children: [
+                        _StatBox(
+                          scale: scale,
+                          label: 'Earth',
+                          value: '${game.earthHp.toInt()}/200',
+                        ),
+                        SizedBox(width: 5 * scale),
+                        _StatBox(
+                          scale: scale,
+                          label: 'Ship',
+                          value: '${game.shipHp.toInt()}/100',
+                        ),
+                        SizedBox(width: 5 * scale),
+                        _StatBox(
+                          scale: scale,
+                          label: 'Gold',
+                          value: '${game.gold}',
+                        ),
+                        SizedBox(width: 5 * scale),
+                        _StatBox(
+                          scale: scale,
+                          label: 'Score',
+                          value: '${game.score}',
+                        ),
+                      ],
                     ),
-                    SizedBox(width: 5 * scale),
-                    _StatBox(
-                      scale: scale,
-                      label: 'Ship',
-                      value: '${game.shipHp.toInt()}/100',
+
+                    SizedBox(width: 10 * scale),
+
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.only(top: 2 * scale),
+                        child: Column(
+                          children: [
+                            _TopCompactHealthBar(
+                              scale: scale,
+                              label: 'Earth',
+                              value: game.earthHp / GameConfig.earthMaxHp,
+                            ),
+                            SizedBox(height: 5 * scale),
+                            _TopCompactHealthBar(
+                              scale: scale,
+                              label: 'Ship',
+                              value: game.shipHp / GameConfig.shipMaxHp,
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                    SizedBox(width: 5 * scale),
-                    _StatBox(
-                      scale: scale,
-                      label: 'Gold',
-                      value: '${game.gold}',
-                    ),
-                    SizedBox(width: 5 * scale),
-                    _StatBox(
-                      scale: scale,
-                      label: 'Score',
-                      value: '${game.score}',
-                    ),
-                    const Spacer(),
+
+                    SizedBox(width: 8 * scale),
+
                     _PauseButton(
                       scale: scale,
                       game: game,
                     ),
                   ],
                 ),
-                SizedBox(height: 4 * scale),
-                _MiniHealthBar(
-                  scale: scale,
-                  label: 'Earth',
-                  value: game.earthHp / GameConfig.earthMaxHp,
-                ),
-                SizedBox(height: 3 * scale),
-                _MiniHealthBar(
-                  scale: scale,
-                  label: 'Ship',
-                  value: game.shipHp / GameConfig.shipMaxHp,
-                ),
-                SizedBox(height: 3 * scale),
+
+                SizedBox(height: 6 * scale),
+
                 _ModeText(
                   scale: scale,
                   game: game,
                 ),
+
                 if (game.earthDyingWarning)
-                  Text(
-                    'EARTH DYING!',
-                    style: TextStyle(
-                      color: Colors.redAccent,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 10 * scale,
-                      letterSpacing: 1,
+                  Padding(
+                    padding: EdgeInsets.only(top: 2 * scale),
+                    child: Text(
+                      'EARTH DYING!',
+                      style: TextStyle(
+                        color: Colors.redAccent,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 10 * scale,
+                        letterSpacing: 1,
+                      ),
                     ),
                   ),
               ],
@@ -154,7 +178,7 @@ class _PauseButton extends StatelessWidget {
         child: Icon(
           Icons.pause,
           color: Colors.white,
-          size: 23 * scale,
+          size: 22 * scale,
         ),
       ),
     );
@@ -207,12 +231,12 @@ class _StatBox extends StatelessWidget {
   }
 }
 
-class _MiniHealthBar extends StatelessWidget {
+class _TopCompactHealthBar extends StatelessWidget {
   final String label;
   final double value;
   final double scale;
 
-  const _MiniHealthBar({
+  const _TopCompactHealthBar({
     required this.label,
     required this.value,
     required this.scale,
@@ -230,21 +254,28 @@ class _MiniHealthBar extends StatelessWidget {
             label,
             style: TextStyle(
               color: Colors.white70,
-              fontSize: 8.5 * scale,
+              fontSize: 8.2 * scale,
             ),
           ),
         ),
         Expanded(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: LinearProgressIndicator(
-              value: clamped,
-              minHeight: 5 * scale,
-              backgroundColor: Colors.white.withOpacity(0.13),
-              valueColor: AlwaysStoppedAnimation<Color>(
-                clamped > 0.35
-                    ? Colors.lightGreenAccent
-                    : Colors.redAccent,
+          child: Container(
+            height: 7 * scale,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.10),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: LinearProgressIndicator(
+                value: clamped,
+                minHeight: 7 * scale,
+                backgroundColor: Colors.transparent,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  clamped > 0.35
+                      ? Colors.lightGreenAccent
+                      : Colors.redAccent,
+                ),
               ),
             ),
           ),
