@@ -5,10 +5,7 @@ import '../orbit_guard_game.dart';
 class PauseMenu extends StatelessWidget {
   final OrbitGuardGame game;
 
-  const PauseMenu({
-    super.key,
-    required this.game,
-  });
+  const PauseMenu({super.key, required this.game});
 
   @override
   Widget build(BuildContext context) {
@@ -17,14 +14,12 @@ class PauseMenu extends StatelessWidget {
         color: Colors.black.withOpacity(0.68),
         child: Center(
           child: Container(
-            width: 300,
-            padding: const EdgeInsets.all(22),
+            width: 270,
+            padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
               color: const Color(0xFF101426),
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: Colors.cyanAccent.withOpacity(0.28),
-              ),
+              border: Border.all(color: Colors.cyanAccent.withOpacity(0.28)),
               boxShadow: [
                 BoxShadow(
                   color: Colors.cyanAccent.withOpacity(0.15),
@@ -44,16 +39,10 @@ class PauseMenu extends StatelessWidget {
                     letterSpacing: 2,
                   ),
                 ),
-                const SizedBox(height: 22),
-                _MenuButton(
-                  label: 'RESUME',
-                  onTap: game.resumeGame,
-                ),
-                const SizedBox(height: 10),
-                _MenuButton(
-                  label: 'GO TO MAIN MENU',
-                  onTap: game.goToMainMenu,
-                ),
+                const SizedBox(height: 16),
+                _MenuButton(label: 'RESUME', onTap: game.resumeGame),
+                const SizedBox(height: 8),
+                _MenuButton(label: 'GO TO MAIN MENU', onTap: game.goToMainMenu),
               ],
             ),
           ),
@@ -77,11 +66,11 @@ class _MenuButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 11),
+        width: 220,
+        padding: const EdgeInsets.symmetric(vertical: 9),
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.12),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: Colors.white.withOpacity(0.18),
           ),
@@ -92,7 +81,7 @@ class _MenuButton extends StatelessWidget {
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w900,
-            fontSize: 13,
+            fontSize: 11.5,
             letterSpacing: 1,
           ),
         ),
