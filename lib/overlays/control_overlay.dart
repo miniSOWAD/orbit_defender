@@ -39,8 +39,8 @@ class ControlOverlay extends StatelessWidget {
                   ),
 
                 Positioned(
-                  left: 14 * scale,
-                  bottom: 12 * scale,
+                  left: 18 * scale,
+                  bottom: 16 * scale,
                   child: Row(
                     children: [
                       _RotateButton(
@@ -49,7 +49,7 @@ class ControlOverlay extends StatelessWidget {
                         onDown: () => game.rotatingLeft = true,
                         onUp: () => game.rotatingLeft = false,
                       ),
-                      SizedBox(width: 10 * scale),
+                      SizedBox(width: 14 * scale),
                       _RotateButton(
                         scale: scale,
                         icon: Icons.rotate_right,
@@ -273,20 +273,27 @@ class _RotateButton extends StatelessWidget {
       onTapUp: (_) => onUp(),
       onTapCancel: onUp,
       child: Container(
-        width: 48 * scale,
-        height: 48 * scale,
+        width: 64 * scale,
+        height: 64 * scale,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: Colors.black.withOpacity(0.36),
+          color: Colors.white.withOpacity(0.06),
           border: Border.all(
             color: Colors.white.withOpacity(0.24),
-            width: 1.2,
+            width: 1.4,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.cyanAccent.withOpacity(0.08),
+              blurRadius: 18 * scale,
+              spreadRadius: 1 * scale,
+            ),
+          ],
         ),
         child: Icon(
           icon,
-          color: Colors.white,
-          size: 25 * scale,
+          color: Colors.white.withOpacity(0.82),
+          size: 34 * scale,
         ),
       ),
     );
