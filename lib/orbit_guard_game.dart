@@ -38,6 +38,8 @@ class OrbitGuardGame extends FlameGame with HasCollisionDetection {
   double buyingTimer = 0;
   double currentBuyingDuration = GameConfig.firstBuyingDuration;
 
+  double rewardAlertTimer = 0;
+
   double _survivalRewardTimer = 0;
   double survivedSeconds = 0;
 
@@ -71,6 +73,8 @@ class OrbitGuardGame extends FlameGame with HasCollisionDetection {
   }
 
   bool get isBuyingPhase => state == GameState.buying;
+
+  bool get showRewardAlert => rewardAlertTimer > 0;
 
   double get buyingTimeLeft {
     final left = currentBuyingDuration - buyingTimer;
@@ -125,10 +129,16 @@ class OrbitGuardGame extends FlameGame with HasCollisionDetection {
     }
 
     if (state == GameState.buying) {
-      super.update(dt);
-      _updateBuyingPhase(dt);
-      return;
+    super.update(dt);
+
+    if (rewardAlertTimer > 0) {
+      rewardAlertTimer -= dt;
+      if (rewardAlertTimer < 0) rewardAlertTimer = 0;
     }
+
+    _updateBuyingPhase(dt);
+    return;
+  }
 
     if (state == GameState.playing) {
       super.update(dt);
@@ -167,6 +177,7 @@ class OrbitGuardGame extends FlameGame with HasCollisionDetection {
     _survivalRewardTimer = 0;
     survivedSeconds = 0;
     _earthDeathTimer = 0;
+    rewardAlertTimer = 0;
 
     hasActiveRun = true;
     isFirstBuyingPhase = true;
@@ -222,7 +233,11 @@ class OrbitGuardGame extends FlameGame with HasCollisionDetection {
 
     if (_survivalRewardTimer >= GameConfig.survivalRewardInterval) {
       _survivalRewardTimer = 0;
+
       gold += GameConfig.survivalRewardGold;
+
+      rewardAlertTimer = 2;
+
       _startBuyingPhase(GameConfig.repeatBuyingDuration);
     }
   }
