@@ -1,4 +1,4 @@
-package com.example.orbit_defender
+package com.bytexstudio.orbitdefender
 
 import io.flutter.embedding.android.FlutterActivity
 
