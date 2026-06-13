@@ -1,7 +1,6 @@
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'orbit_guard_game.dart';
 import 'overlays/control_overlay.dart';
@@ -10,6 +9,8 @@ import 'overlays/game_over_menu.dart';
 import 'overlays/main_menu.dart';
 import 'overlays/pause_menu.dart';
 import 'overlays/start_screen.dart';
+
+const String kGameFontFamily = 'Orbitron';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,8 +38,24 @@ class OrbitGuardApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Orbit Defender',
       theme: ThemeData(
-        textTheme: GoogleFonts.orbitronTextTheme(),
-        fontFamily: GoogleFonts.orbitron().fontFamily,
+        fontFamily: kGameFontFamily,
+        textTheme: const TextTheme(
+          displayLarge: TextStyle(fontFamily: kGameFontFamily),
+          displayMedium: TextStyle(fontFamily: kGameFontFamily),
+          displaySmall: TextStyle(fontFamily: kGameFontFamily),
+          headlineLarge: TextStyle(fontFamily: kGameFontFamily),
+          headlineMedium: TextStyle(fontFamily: kGameFontFamily),
+          headlineSmall: TextStyle(fontFamily: kGameFontFamily),
+          titleLarge: TextStyle(fontFamily: kGameFontFamily),
+          titleMedium: TextStyle(fontFamily: kGameFontFamily),
+          titleSmall: TextStyle(fontFamily: kGameFontFamily),
+          bodyLarge: TextStyle(fontFamily: kGameFontFamily),
+          bodyMedium: TextStyle(fontFamily: kGameFontFamily),
+          bodySmall: TextStyle(fontFamily: kGameFontFamily),
+          labelLarge: TextStyle(fontFamily: kGameFontFamily),
+          labelMedium: TextStyle(fontFamily: kGameFontFamily),
+          labelSmall: TextStyle(fontFamily: kGameFontFamily),
+        ),
       ),
       home: Scaffold(
         backgroundColor: Colors.black,
