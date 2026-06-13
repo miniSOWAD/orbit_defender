@@ -14,7 +14,7 @@ class GameConfig {
   static const double earthMaxHp = 200;
   static const double shipMaxHp = 100;
 
-  static const int startingGold = 650;
+  static const int startingGold = 750;
 
   static const int shipHealCost = 20;
   static const double shipHealAmount = 10;
@@ -26,7 +26,7 @@ class GameConfig {
   static const double repeatBuyingDuration = 15;
 
   static const double survivalRewardInterval = 45;
-  static const int survivalRewardGold = 600;
+  static const int survivalRewardGold = 800;
 
   static const double earthDeathDelay = 3;
 
